@@ -1,6 +1,7 @@
 About
 =====
 Python Groonga_ Client.
+poyonga support to HTTP and GQTP protocol.
 
 .. _Groonga: http://groonga.org/
 
