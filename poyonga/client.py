@@ -59,7 +59,7 @@ class Groonga(object):
             _data = msg.read()
         return GroongaResult(_data)
 
-    def call(self, cmd, **kwargs=):
+    def call(self, cmd, **kwargs):
         if self.protocol == "http":
             return self._call_http(cmd, **kwargs)
         else:
