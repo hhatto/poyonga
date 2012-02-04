@@ -3,7 +3,7 @@ import urllib2
 import socket
 from ctypes.util import find_library
 from ctypes import Structure, pointer, c_long, CDLL
-from poyonga.result import GroongaResult
+from poyonga.result import GroongaResult, GroongaSelectResult
 
 
 class Groonga(object):
@@ -51,13 +51,18 @@ class Groonga(object):
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), "/d/"]
         if kwargs:
-            cmd = cmd + "?"
-        url = "".join(domain) + cmd + urllib.urlencode(kwargs)
+            url = "".join(domain) + cmd + "?" + urllib.urlencode(kwargs)
+        else:
+            url = "".join(domain) + cmd
         try:
             _data = urllib2.urlopen(url).read()
         except urllib2.HTTPError, msg:
             _data = msg.read()
-        return GroongaResult(_data)
+        if cmd == 'select':
+            ret = GroongaSelectResult(_data)
+        else:
+            ret = GroongaResult(_data)
+        return ret
 
     def call(self, cmd, **kwargs):
         if self.protocol == "http":
