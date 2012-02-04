@@ -6,4 +6,4 @@ pypireg:
 	python setup.py sdist upload
 
 clean:
-	rm -rf */*.pyc ./build ./dist ./*.egg-info
+	rm -rf temp */*.pyc ./build ./dist ./*.egg-info
