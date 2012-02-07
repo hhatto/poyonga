@@ -24,8 +24,8 @@ class Groonga(object):
         _cmd = cmd
         _start = self.CTimeSpec()
         _end = self.CTimeSpec()
-        for d in kwargs:
-            _cmd += " --%s '%s'" % (d, kwargs[d])
+        _cmd_arg = "".join([" --%s '%s'" % (d, kwargs[d]) for d in kwargs])
+        _cmd = _cmd + _cmd_arg
         _cmd_str = "%08x" % len(_cmd)
         exec "_cmd_len = \"\\x%02s\\x%02s\\x%02s\\x%02s\"" % (
                 _cmd_str[:2], _cmd_str[2:4], _cmd_str[4:6], _cmd_str[6:])
@@ -63,11 +63,14 @@ class Groonga(object):
         return _data
 
     def call(self, cmd, **kwargs):
+        output_type = kwargs.get("output_type")
+        if not output_type:
+            output_type = "json"
         if self.protocol == "http":
             ret = self._call_http(cmd, **kwargs)
         else:
             ret = self._call_gqtp(cmd, **kwargs)
         if cmd == 'select':
-            return GroongaSelectResult(ret)
+            return GroongaSelectResult(ret, output_type)
         else:
-            return GroongaResult(ret)
+            return GroongaResult(ret, output_type)

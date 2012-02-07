@@ -1,11 +1,35 @@
-import json
+import csv
+try:
+    from cStringIO import StringIO
+except ImportError:
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
+try:
+    import ujson as json
+except ImportError:
+    import json
+try:
+    import msgpack
+except ImportError:
+    msgpack = None
 
 
 class GroongaResult(object):
 
     def __init__(self, data, output_type="json"):
         self.raw_result = data
-        if output_type == "json":
+        if output_type == 'tsv':
+            # TODO: not implement
+            c = csv.reader(StringIO(data), delimiter='\t')
+        elif output_type == 'msgpack':
+            if msgpack:
+                unpacker = msgpack.Unpacker()
+                _result = msgpack.unpackb(data)
+            else:
+                raise Exception("msgpack is not support")
+        else:   # json or other types...
             _result = json.loads(data)
         self.status = _result[0][0]
         self.start_time = _result[0][1]
@@ -26,4 +50,5 @@ class GroongaSelectResult(GroongaResult):
         self.hit_num = self.body[0][0][0]
         if self.status == 0:
             keys = [k[0] for k in self.body[0][1]]
-            self.items = [dict(zip(keys, item)) for item in self.body[0][2:]]
+            self.items = [
+                    dict(list(zip(keys, item))) for item in self.body[0][2:]]
