@@ -1,7 +1,7 @@
 from poyonga.client import Groonga
 import json
 
-g = Groonga(host="192.168.24.72")
+g = Groonga()
 
 
 def _call(g, cmd, **kwargs):
