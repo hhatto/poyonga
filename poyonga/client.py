@@ -25,9 +25,11 @@ class Groonga(object):
         _start = self.CTimeSpec()
         _end = self.CTimeSpec()
         for d in kwargs:
-            _cmd += " --%s %s" % (d, kwargs[d])
-        exec "_cmd_id = \"\\x%02x\"" % len(_cmd)
-        _header = "".join(["\xc7", "\x00" * 10, _cmd_id, "\x00" * 12])
+            _cmd += " --%s '%s'" % (d, kwargs[d])
+        _cmd_str = "%08x" % len(_cmd)
+        exec "_cmd_len = \"\\x%02s\\x%02s\\x%02s\\x%02s\"" % (
+                _cmd_str[:2], _cmd_str[2:4], _cmd_str[4:6], _cmd_str[6:])
+        _header = "".join(["\xc7", "\x00" * 7, _cmd_len, "\x00" * 12])
         self.LIBRT.clock_gettime(0, pointer(_start))     # 0: CLOCK_REALTIME
         s.send(_header + _cmd)
         raw_data = s.recv(8192)
@@ -46,7 +48,7 @@ class Groonga(object):
             body = raw_data[24:]
             _data = "[[%d,%d.%d,%lf],%s]" % (
                     status, _start.tv_sec, _start.tv_nsec, diff_time, body)
-        return GroongaResult(_data)
+        return _data
 
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), "/d/"]
@@ -58,14 +60,14 @@ class Groonga(object):
             _data = urllib2.urlopen(url).read()
         except urllib2.HTTPError, msg:
             _data = msg.read()
-        if cmd == 'select':
-            ret = GroongaSelectResult(_data)
-        else:
-            ret = GroongaResult(_data)
-        return ret
+        return _data
 
     def call(self, cmd, **kwargs):
         if self.protocol == "http":
-            return self._call_http(cmd, **kwargs)
+            ret = self._call_http(cmd, **kwargs)
         else:
-            return self._call_gqtp(cmd, **kwargs)
+            ret = self._call_gqtp(cmd, **kwargs)
+        if cmd == 'select':
+            return GroongaSelectResult(ret)
+        else:
+            return GroongaResult(ret)
