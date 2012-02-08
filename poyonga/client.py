@@ -19,10 +19,12 @@ class Groonga(object):
     class CTimeSpec(Structure):
         _fields_ = [("tv_sec", c_long), ("tv_nsec", c_long)]
 
-    def __init__(self, host='localhost', port=10041, protocol='http'):
+    def __init__(self, host='localhost', port=10041, protocol='http',
+                 encoding='utf-8'):
         self.host = host
         self.port = port
         self.protocol = protocol
+        self.encoding = encoding
 
     def _call_gqtp(self, cmd, **kwargs):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -77,6 +79,6 @@ class Groonga(object):
         else:
             ret = self._call_gqtp(cmd, **kwargs)
         if cmd == 'select':
-            return GroongaSelectResult(ret, output_type)
+            return GroongaSelectResult(ret, output_type, self.encoding)
         else:
-            return GroongaResult(ret, output_type)
+            return GroongaResult(ret, output_type, self.encoding)

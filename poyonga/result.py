@@ -7,9 +7,10 @@ except ImportError:
     except ImportError:
         from io import StringIO
 try:
-    import ujson as json
+    import ujson
 except ImportError:
-    import json
+    ujson = None
+import json
 try:
     import msgpack
 except ImportError:
@@ -18,7 +19,7 @@ except ImportError:
 
 class GroongaResult(object):
 
-    def __init__(self, data, output_type="json"):
+    def __init__(self, data, output_type="json", encoding='utf-8'):
         self.raw_result = data
         if output_type == 'tsv':
             # TODO: not implement
@@ -30,7 +31,10 @@ class GroongaResult(object):
             else:
                 raise Exception("msgpack is not support")
         else:   # json or other types...
-            _result = json.loads(data)
+            if ujson and encoding == 'utf-8':
+                _result = ujson.loads(data)
+            else:
+                _result = json.loads(data)
         self.status = _result[0][0]
         self.start_time = _result[0][1]
         self.elapsed = _result[0][2]
@@ -44,8 +48,8 @@ class GroongaResult(object):
 
 class GroongaSelectResult(GroongaResult):
 
-    def __init__(self, data, output_type="json"):
-        super(GroongaSelectResult, self).__init__(data, output_type)
+    def __init__(self, data, output_type="json", encoding='utf-8'):
+        super(GroongaSelectResult, self).__init__(data, output_type, encoding)
         self.items = []
         self.hit_num = self.body[0][0][0]
         if self.status == 0:
