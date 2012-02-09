@@ -34,7 +34,7 @@ class GroongaResult(object):
             if ujson and encoding == 'utf-8':
                 _result = ujson.loads(data)
             else:
-                _result = json.loads(data)
+                _result = json.loads(data, encoding)
         self.status = _result[0][0]
         self.start_time = _result[0][1]
         self.elapsed = _result[0][2]
