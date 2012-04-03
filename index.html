@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Poyonga : Python Groonga Client" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Poyonga</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/hhatto/poyonga">Fork Me on GitHub</a>
+
+          <h1 id="project_title">Poyonga</h1>
+          <h2 id="project_tagline">Python Groonga Client</h2>
+
+          <section id="downloads">
+            <a class="zip_download_link" href="https://github.com/hhatto/poyonga/zipball/master">Download this project as a .zip file</a>
+            <a class="tar_download_link" href="https://github.com/hhatto/poyonga/tarball/master">Download this project as a tar.gz file</a>
+          </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>About</h1>
+
+<p>Python <a href="http://groonga.org/">Groonga</a> Client. poyonga support to HTTP
+and GQTP protocol.</p>
+
+<h1>Installation</h1>
+
+<p>from pip:</p>
+
+<pre><code>pip install --upgrade poyonga
+</code></pre>
+
+<p>from easy_install:</p>
+
+<pre><code>easy_install -ZU poyonga
+</code></pre>
+
+<h1>Usage</h1>
+
+<h2>Basic Usage</h2>
+
+<pre><code>&gt;&gt;&gt; from poyonga import Groonga
+&gt;&gt;&gt; g = Groonga()
+&gt;&gt;&gt; g.protocol
+'http'
+&gt;&gt;&gt; ret = g.call("status")
+&gt;&gt;&gt; ret
+&lt;poyonga.result.GroongaResult object at 0x8505ccc&gt;
+&gt;&gt;&gt; ret.status
+0
+&gt;&gt;&gt; ret.body
+{u'uptime': 427, u'max_command_version': 2, u'n_queries': 3,
+u'cache_hit_rate': 66.6666666666667, u'version': u'1.2.8', u
+'alloc_count': 156, u'command_version': 1, u'starttime': 132
+8286909, u'default_command_version': 1}
+&gt;&gt;&gt;
+</code></pre>
+
+<h2>with eventlet</h2>
+
+<pre><code>from poyonga import Groonga
+import eventlet
+
+eventlet.monkey_patch()
+
+def fetch(cmd, **kwargs):
+    g = Groonga()
+    ret = g.call(cmd, **kwargs)
+    print ret.status
+    print ret.body
+    print "*" * 40
+
+cmds = [("status", {}),
+        ("log_level", {"level": "warning"}),
+        ("table_list", {})
+        ("select", {"table": "Site"})]
+pool = eventlet.GreenPool()
+for cmd, kwargs in cmds:
+    pool.spawn_n(fetch, cmd, **kwargs)
+pool.waitall()
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Poyonga maintained by <a href="https://github.com/hhatto">hhatto</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
