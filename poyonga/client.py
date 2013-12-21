@@ -32,7 +32,7 @@ class Groonga(object):
         _cmd = cmd
         _start = self.CTimeSpec()
         _end = self.CTimeSpec()
-        _cmd_arg = "".join([" --%s '%s'" % (d, kwargs[d]) for d in kwargs])
+        _cmd_arg = "".join([" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
         _cmd = _cmd + _cmd_arg
         _cmd_str = "%08x" % len(_cmd)
         exec("_cmd_len = \"\\x%02s\\x%02s\\x%02s\\x%02s\"" % (
