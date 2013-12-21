@@ -15,15 +15,16 @@ setup(
     license='MIT License',
     author='Hideo Hattori',
     author_email='hhatto.jp@gmail.com',
-    #url='https://github.com/hhatto/pygroonga',
+    url='https://github.com/hhatto/poyonga',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Operating System :: Unix',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
     ],
-    keywords="groonga http",
+    keywords="groonga http gqtp",
     packages=['poyonga'],
     zip_safe=False,
 )
