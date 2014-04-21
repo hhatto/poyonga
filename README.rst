@@ -1,5 +1,11 @@
-About
-=====
+=======
+poyonga
+=======
+
+.. image:: https://travis-ci.org/hhatto/poyonga.svg?branch=master
+    :target: https://travis-ci.org/hhatto/poyonga
+    :alt: Build status
+
 Python Groonga_ Client.
 poyonga support to HTTP and GQTP protocol.
 
