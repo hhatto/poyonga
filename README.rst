@@ -26,9 +26,18 @@ from easy_install::
 Usage
 =====
 
+Setup Groonga Server
+--------------------
+::
+
+    $ groonga -n grn.db     # create groonga database file
+    $ groonga -s grn.db     # start groonga server with GQTP
+
+
 Basic Usage
 -----------
-::
+
+.. code-block:: python
 
     >>> from poyonga import Groonga
     >>> g = Groonga()
@@ -48,7 +57,7 @@ Basic Usage
 
 with eventlet
 -------------
-::
+.. code-block:: python
 
     from poyonga import Groonga
     import eventlet
@@ -70,3 +79,8 @@ with eventlet
     for cmd, kwargs in cmds:
         pool.spawn_n(fetch, cmd, **kwargs)
     pool.waitall()
+
+see `examples directory`_
+
+.. _`examples directory`: https://github.com/hhatto/poyonga/tree/master/examples
+
