@@ -7,9 +7,13 @@ else:
     from urllib2 import urlopen, HTTPError
     from urllib import urlencode
 import socket
+import struct
 from ctypes.util import find_library
 from ctypes import Structure, pointer, c_long, CDLL
 from poyonga.result import GroongaResult, GroongaSelectResult
+
+
+GQTP_HEADER_SIZE = 24
 
 
 class Groonga(object):
@@ -41,12 +45,15 @@ class Groonga(object):
         self.LIBRT.clock_gettime(0, pointer(_start))     # 0: CLOCK_REALTIME
         s.send(_header + _cmd)
         raw_data = s.recv(8192)
+        proto, qtype, keylen, level, flags, status, size, opaque, cas \
+                = struct.unpack("!BBHBBHIIQ", raw_data[:GQTP_HEADER_SIZE])
+        while len(raw_data) < size + GQTP_HEADER_SIZE:
+            raw_data += s.recv(8192)
         self.LIBRT.clock_gettime(0, pointer(_end))
         s.close()
 
         diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.) - \
                     (_start.tv_sec + _start.tv_nsec / 1000000000.)
-        status = ord(raw_data[6]) + (ord(raw_data[7]) << 8)
         if status != 0:
             status -= 65536
             body = "\"\",[[\"\",\"\",0]]"
