@@ -30,11 +30,14 @@ class GroongaResult(object):
                 _result = msgpack.unpackb(data)
             else:
                 raise Exception("msgpack is not support")
-        else:   # json or other types...
+        elif output_type == 'json':
             if ujson and encoding == 'utf-8':
                 _result = ujson.loads(data)
             else:
                 _result = json.loads(data, encoding)
+        else:   # xml or other types...
+            # TODO: not implement
+            pass
         self.status = _result[0][0]
         self.start_time = _result[0][1]
         self.elapsed = _result[0][2]
