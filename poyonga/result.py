@@ -58,4 +58,4 @@ class GroongaSelectResult(GroongaResult):
         if self.status == 0:
             keys = [k[0] for k in self.body[0][1]]
             self.items = [
-                    dict(list(zip(keys, item))) for item in self.body[0][2:]]
+                dict(list(zip(keys, item))) for item in self.body[0][2:]]
