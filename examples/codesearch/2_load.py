@@ -15,8 +15,8 @@ def _load(path):
     ext = os.path.splitext(filename)[1]
     content = open(path).read()
     data = """[{"_key":"%s","name":"%s","content":"%s","type":"%s"}]""" % (
-            path, filename, re.escape(content), ext)
-    data = [{"_key":path, "name": filename, "content": content, "ext": ext}]
+        path, filename, re.escape(content), ext)
+    data = [{"_key": path, "name": filename, "content": content, "ext": ext}]
     data = json.dumps(data)
     ret = grn.call("load", table="Files", values=data)
     print ret.body
