@@ -27,17 +27,15 @@ class PoyongaGQTPTestCase(unittest.TestCase):
     @patch('poyonga.client.socket.socket')
     def test_json_result_with_gqtp(self, mock_socket):
         m = Mock()
-        _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas = \
-                0xc7, 0x02, 0, 0, 0, 0, 2, 0, 0
-        packdata = struct.pack("!BBHBBHIIQ",
-                _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas)
-        m.recv.return_value = packdata + "{}"
+        _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas, _data = \
+                0xc7, 0x02, 0, 0, 0, 0, 2, 0, 0, "{}"
+        packdata = struct.pack("!BBHBBHIIQ2s",
+                _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas, _data)
+        m.recv.return_value = packdata
         mock_socket.return_value = m
         ret = self.g.call('status')
         self.assertEqual(type(ret), GroongaResult)
         self.assertEqual(ret.status, 0)
-        print(dir(ret))
-        print(ret.raw_result)
 
 
 if __name__ == '__main__':
