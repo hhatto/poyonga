@@ -19,9 +19,17 @@ GQTP_HEADER_SIZE = 24
 class Groonga(object):
 
     LIBRT = CDLL(find_library("rt"))
+    LIBC = CDLL(find_library("c"))
 
     class CTimeSpec(Structure):
         _fields_ = [("tv_sec", c_long), ("tv_nsec", c_long)]
+
+    class CTimeval(Structure):
+        _fields_ = [("tv_sec", c_long), ("tv_usec", c_long)]
+
+    class _TimeSpec(object):
+        tv_sec = 0.
+        tv_nsec = 0.
 
     def __init__(self, host='localhost', port=10041, protocol='http',
                  encoding='utf-8'):
@@ -30,26 +38,41 @@ class Groonga(object):
         self.protocol = protocol
         self.encoding = encoding
 
+    def _usec2nsec(self, nsec):
+        return nsec * (1000000000 / 1000000)
+
+    def _clock_gettime(self):
+        ret = self._TimeSpec()
+        if hasattr(self.LIBRT, 'clock_gettime'):
+            timespec = self.CTimeSpec()
+            self.LIBRT.clock_gettime(0, pointer(timespec))     # 0: CLOCK_REALTIME
+            ret.tv_sec = timespec.tv_sec
+            ret.tv_nsec = timespec.tv_nsec
+        else:   # MacOSX and other environment
+            timespec = self.CTimeval()
+            self.LIBC.gettimeofday(pointer(timespec), None)
+            ret.tv_sec = timespec.tv_sec
+            ret.tv_nsec = self._usec2nsec(timespec.tv_usec)
+        return ret
+
     def _call_gqtp(self, cmd, **kwargs):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         _cmd = cmd
-        _start = self.CTimeSpec()
-        _end = self.CTimeSpec()
         _cmd_arg = "".join([" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
         _cmd = _cmd + _cmd_arg
         _cmd_str = "%08x" % len(_cmd)
         exec("_cmd_len = \"\\x%02s\\x%02s\\x%02s\\x%02s\"" % (
                 _cmd_str[:2], _cmd_str[2:4], _cmd_str[4:6], _cmd_str[6:]))
         _header = "".join(["\xc7", "\x00" * 7, _cmd_len, "\x00" * 12])
-        self.LIBRT.clock_gettime(0, pointer(_start))     # 0: CLOCK_REALTIME
+        _start = self._clock_gettime()
         s.send(_header + _cmd)
         raw_data = s.recv(8192)
         proto, qtype, keylen, level, flags, status, size, opaque, cas \
                 = struct.unpack("!BBHBBHIIQ", raw_data[:GQTP_HEADER_SIZE])
         while len(raw_data) < size + GQTP_HEADER_SIZE:
             raw_data += s.recv(8192)
-        self.LIBRT.clock_gettime(0, pointer(_end))
+        _end = self._clock_gettime()
         s.close()
 
         diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.) - \
