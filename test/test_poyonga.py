@@ -1,6 +1,10 @@
+import sys
 import struct
 import unittest
-from mock import patch, Mock
+try:
+    from mock import patch, Mock
+except ImportError:
+    from unittest.mock import patch, Mock
 from poyonga import Groonga, GroongaResult
 
 
@@ -27,8 +31,12 @@ class PoyongaGQTPTestCase(unittest.TestCase):
     @patch('poyonga.client.socket.socket')
     def test_json_result_with_gqtp(self, mock_socket):
         m = Mock()
-        _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas, _data = \
-                0xc7, 0x02, 0, 0, 0, 0, 2, 0, 0, "{}"
+        if sys.version_info[0] == 3:
+            _data = b"{}"
+        else:
+            _data = "{}"
+        _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas = \
+                0xc7, 0x02, 0, 0, 0, 0, 2, 0, 0
         packdata = struct.pack("!BBHBBHIIQ2s",
                 _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas, _data)
         m.recv.return_value = packdata

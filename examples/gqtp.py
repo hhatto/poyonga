@@ -11,6 +11,6 @@ cmds = [("status", {}),
         ]
 for cmd, kwargs in cmds:
     ret = g.call(cmd, **kwargs)
-    print ret.status
-    print ret.body
-    print "*" * 40
+    print(ret.status)
+    print(ret.body)
+    print("*" * 40)
