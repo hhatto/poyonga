@@ -17,7 +17,7 @@ setup(
     author_email='hhatto.jp@gmail.com',
     url='https://github.com/hhatto/poyonga',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Operating System :: Unix',
         'Operating System :: POSIX :: Linux',
