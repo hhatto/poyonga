@@ -1,10 +1,15 @@
 language: python
 
+os:
+    - linux
+    - osx
+
 python:
     - "2.6"
     - "2.7"
     - "3.2"
     - "3.3"
+    - "3.4"
     - "pypy"
 
 before_install:
@@ -16,3 +21,8 @@ install:
 
 script:
     - nosetests
+
+matrix:
+    allow_failures:
+        - python: "2.7"
+        - python: "3.4"
