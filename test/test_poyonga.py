@@ -36,9 +36,9 @@ class PoyongaGQTPTestCase(unittest.TestCase):
         else:
             _data = "{}"
         _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas = \
-                0xc7, 0x02, 0, 0, 0, 0, 2, 0, 0
+            0xc7, 0x02, 0, 0, 0, 0, 2, 0, 0
         packdata = struct.pack("!BBHBBHIIQ2s",
-                _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas, _data)
+                               _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas, _data)
         m.recv.return_value = packdata
         mock_socket.return_value = m
         ret = self.g.call('status')
