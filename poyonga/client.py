@@ -56,11 +56,8 @@ class Groonga(object):
             ret.tv_nsec = self._usec2nsec(timespec.tv_usec)
         return ret
 
-    def _call_gqtp(self, cmd, **kwargs):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.host, self.port))
-
-        # create cmd & send data to groonga
+    def _get_send_data_for_gqtp(self, cmd, **kwargs):
+        """create cmd & send data to groonga"""
         _cmd = cmd
         _cmd_arg = "".join(
             [" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
@@ -78,18 +75,9 @@ class Groonga(object):
             _send_data = _header + _cmd.encode()
         else:
             _send_data = _header + _cmd
-        _start = self._clock_gettime()
-        s.send(_send_data)
+        return _send_data
 
-        # recv groonga data
-        raw_data = s.recv(8192)
-        proto, qtype, keylen, level, flags, status, size, opaque, cas \
-            = struct.unpack("!BBHBBHIIQ", raw_data[:GQTP_HEADER_SIZE])
-        while len(raw_data) < size + GQTP_HEADER_SIZE:
-            raw_data += s.recv(8192)
-        _end = self._clock_gettime()
-        s.close()
-
+    def _convert_gqtp_result_data(self, _start, _end, status, raw_data):
         # struct result data
         diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.) - \
                     (_start.tv_sec + _start.tv_nsec / 1000000000.)
@@ -99,12 +87,28 @@ class Groonga(object):
             _data = "[[%d,%d.%d,%lf,%s]]" % (
                     status, _start.tv_sec, _start.tv_nsec, diff_time, body)
         else:
-            body = raw_data[24:]
+            body = raw_data[GQTP_HEADER_SIZE:]
             if sys.version_info[0] == 3:
                 body = body.decode()
             _data = "[[%d,%d.%d,%lf],%s]" % (
                     status, _start.tv_sec, _start.tv_nsec, diff_time, body)
         return _data
+
+    def _call_gqtp(self, cmd, **kwargs):
+        # create socket & send data
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        _start = self._clock_gettime()
+        s.send(self._get_send_data_for_gqtp(cmd, **kwargs))
+        # recv groonga data
+        raw_data = s.recv(8192)
+        proto, qtype, keylen, level, flags, status, size, opaque, cas \
+            = struct.unpack("!BBHBBHIIQ", raw_data[:GQTP_HEADER_SIZE])
+        while len(raw_data) < size + GQTP_HEADER_SIZE:
+            raw_data += s.recv(8192)
+        _end = self._clock_gettime()
+        s.close()
+        return self._convert_gqtp_result_data(_start, _end, status, raw_data)
 
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), "/d/"]
