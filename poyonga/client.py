@@ -112,10 +112,9 @@ class Groonga(object):
 
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), "/d/"]
+        url = "".join(domain) + cmd
         if kwargs:
-            url = "".join(domain) + cmd + "?" + urlencode(kwargs)
-        else:
-            url = "".join(domain) + cmd
+            url = "".join([url, "?", urlencode(kwargs)])
         try:
             _data = urlopen(url).read()
         except HTTPError as msg:
