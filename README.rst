@@ -84,3 +84,11 @@ see `examples directory`_
 
 .. _`examples directory`: https://github.com/hhatto/poyonga/tree/master/examples
 
+
+Links
+=====
+* PyPI_
+* GitHub_
+
+.. _PyPI: https://pypi.python.org/pypi/poyonga
+.. _GitHub: https://github.com/hhatto/poyonga
