@@ -80,6 +80,17 @@ with eventlet
         pool.spawn_n(fetch, cmd, **kwargs)
     pool.waitall()
 
+Multi databases
+---------------
+http://groonga.org/docs/server/http/comparison.html#multi-databases
+
+.. code-block:: python
+
+    g = Groonga(db='db2')
+
+
+example code
+------------
 see `examples directory`_
 
 .. _`examples directory`: https://github.com/hhatto/poyonga/tree/master/examples
