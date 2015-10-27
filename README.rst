@@ -80,13 +80,17 @@ with eventlet
         pool.spawn_n(fetch, cmd, **kwargs)
     pool.waitall()
 
-Multi databases
----------------
-http://groonga.org/docs/server/http/comparison.html#multi-databases
+Custom prefix path
+------------------
+If you use the `Custom prefix path`_ and `Multi databases`_ , specify `prefix_path` .
+
+.. _`Custom prefix path`: http://groonga.org/docs/server/http/comparison.html#custom-prefix-path
+.. _`Multi databases`: http://groonga.org/docs/server/http/comparison.html#multi-databases
 
 .. code-block:: python
 
-    g = Groonga(db='db2')
+    # default is '/d/'
+    g = Groonga(prefix_path='/db2/')
 
 
 example code

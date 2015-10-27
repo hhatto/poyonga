@@ -32,12 +32,12 @@ class Groonga(object):
         tv_nsec = 0.
 
     def __init__(self, host='localhost', port=10041, protocol='http',
-                 encoding='utf-8', db='d'):
+                 encoding='utf-8', prefix_path='/d/'):
         self.host = host
         self.port = port
         self.protocol = protocol
         self.encoding = encoding
-        self.db = db    # only use groonga-httpd
+        self.prefix_path = prefix_path
 
     def _usec2nsec(self, nsec):
         return nsec * (1000000000 / 1000000)
@@ -112,7 +112,7 @@ class Groonga(object):
         return self._convert_gqtp_result_data(_start, _end, status, raw_data)
 
     def _call_http(self, cmd, **kwargs):
-        domain = [self.protocol, "://", self.host, ":", str(self.port), "/%s/" % self.db]
+        domain = [self.protocol, "://", self.host, ":", str(self.port), self.prefix_path]
         url = "".join(domain) + cmd
         if kwargs:
             url = "".join([url, "?", urlencode(kwargs)])
