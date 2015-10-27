@@ -89,6 +89,8 @@ http://groonga.org/docs/server/http/comparison.html#multi-databases
     g = Groonga(db='db2')
 
 
+example code
+------------
 see `examples directory`_
 
 .. _`examples directory`: https://github.com/hhatto/poyonga/tree/master/examples
