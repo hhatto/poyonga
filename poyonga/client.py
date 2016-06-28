@@ -117,7 +117,7 @@ class Groonga(object):
         if kwargs:
             url = "".join([url, "?", urlencode(kwargs)])
         try:
-            _data = urlopen(url).read()
+            _data = urlopen(url).read().decode(self.encoding)
         except HTTPError as msg:
             _data = msg.read()
         return _data
