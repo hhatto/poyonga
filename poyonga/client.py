@@ -22,18 +22,12 @@ def get_send_data_for_gqtp(cmd, **kwargs):
     _cmd_arg = "".join(
         [" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
     _cmd = _cmd + _cmd_arg
-    _cmd_str = "%08x" % len(_cmd)
+    size = struct.pack("!I", len(_cmd))
     if sys.version_info[0] == 3:
-        exec("_cmd_len = b\"\\x%02s\\x%02s\\x%02s\\x%02s\"" % (
-            _cmd_str[:2], _cmd_str[2:4], _cmd_str[4:6], _cmd_str[6:]), globals())
-        _header = b"".join([b"\xc7", b"\x00" * 7, _cmd_len, b"\x00" * 12])
-    else:
-        exec("_cmd_len = \"\\x%02s\\x%02s\\x%02s\\x%02s\"" % (
-            _cmd_str[:2], _cmd_str[2:4], _cmd_str[4:6], _cmd_str[6:]))
-        _header = "".join(["\xc7", "\x00" * 7, _cmd_len, "\x00" * 12])
-    if sys.version_info[0] == 3:
+        _header = b"".join([b"\xc7", b"\x00" * 7, size, b"\x00" * 12])
         _send_data = _header + _cmd.encode()
     else:
+        _header = "".join(["\xc7", "\x00" * 7, size, "\x00" * 12])
         _send_data = _header + _cmd
     return _send_data
 
