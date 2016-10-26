@@ -1,4 +1,10 @@
 import sys
+import socket
+import struct
+from ctypes.util import find_library
+from ctypes import Structure, pointer, c_long, CDLL
+from poyonga.result import GroongaResult, GroongaSelectResult
+from poyonga.const import GQTP_HEADER_SIZE
 if sys.version_info[0] == 3:
     from urllib.request import urlopen
     from urllib.error import HTTPError
@@ -6,14 +12,6 @@ if sys.version_info[0] == 3:
 else:
     from urllib2 import urlopen, HTTPError
     from urllib import urlencode
-import socket
-import struct
-from ctypes.util import find_library
-from ctypes import Structure, pointer, c_long, CDLL
-from poyonga.result import GroongaResult, GroongaSelectResult
-
-
-GQTP_HEADER_SIZE = 24
 
 
 def get_send_data_for_gqtp(cmd, **kwargs):

@@ -8,6 +8,7 @@ except ImportError:
     from unittest.mock import patch, Mock
 from poyonga import Groonga, GroongaResult
 from poyonga.client import get_send_data_for_gqtp, convert_gqtp_result_data, GQTP_HEADER_SIZE
+from poyonga.const import GRN_STATUS_UNSUPPORTED_COMMAND_VERSION
 
 
 class PoyongaHTTPTestCase(unittest.TestCase):
@@ -88,7 +89,7 @@ class PoyongaFunctions(unittest.TestCase):
         e = grn._clock_gettime()
         senddata = get_send_data_for_gqtp("status")
         rawdata = senddata[:GQTP_HEADER_SIZE] + b"{\"test\": 0}"
-        d = convert_gqtp_result_data(s, e, 65465, rawdata)
+        d = convert_gqtp_result_data(s, e, GRN_STATUS_UNSUPPORTED_COMMAND_VERSION, rawdata)
         d = json.loads(d)
         self.assertEqual(d[0][0], -71)
 
