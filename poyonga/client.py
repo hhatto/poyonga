@@ -13,6 +13,9 @@ else:
     from urllib2 import urlopen, HTTPError
     from urllib import urlencode
 
+GRN_PROTO_GQTP = 'gqtp'
+GRN_PROTO_HTTP = 'http'
+
 
 def get_send_data_for_gqtp(cmd, **kwargs):
     """create cmd & send data to groonga"""
