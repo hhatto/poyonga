@@ -18,10 +18,6 @@ from pip::
 
     pip install --upgrade poyonga
 
-from easy_install::
-
-    easy_install -ZU poyonga
-
 
 Usage
 =====
