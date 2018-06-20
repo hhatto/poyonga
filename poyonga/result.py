@@ -34,7 +34,7 @@ class GroongaResult(object):
             if ujson and encoding == 'utf-8':
                 _result = ujson.loads(data)
             else:
-                _result = json.loads(data, encoding)
+                _result = json.loads(data, encoding=encoding)
         else:   # xml or other types...
             # TODO: not implement
             pass
