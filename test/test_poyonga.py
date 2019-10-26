@@ -93,5 +93,6 @@ class PoyongaFunctions(unittest.TestCase):
         d = json.loads(d)
         self.assertEqual(d[0][0], -71)
 
+
 if __name__ == '__main__':
     unittest.main()
