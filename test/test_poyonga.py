@@ -1,3 +1,4 @@
+# coding: utf-8
 import json
 import sys
 import struct
@@ -67,11 +68,12 @@ class PoyongaFunctions(unittest.TestCase):
         self.assertEqual(45, len(d))
         if sys.version_info[0] == 3:
             self.assertEqual(ord('\xc7'), d[0])
+            # check body length
+            self.assertEqual(21, d[11])
         else:
             self.assertEqual('\xc7', d[0])
-
-        # check body length
-        self.assertEqual(21, d[11])
+            # check body length
+            self.assertEqual("\x15", d[11])
 
         body = d[GQTP_HEADER_SIZE:]
         (size, ) = struct.unpack("!I", d[8:12])
@@ -83,11 +85,12 @@ class PoyongaFunctions(unittest.TestCase):
         self.assertEqual(47, len(d))
         if sys.version_info[0] == 3:
             self.assertEqual(ord('\xc7'), d[0])
+            # check body length
+            self.assertEqual(23, d[11])
         else:
-            self.assertEqual('\xc7', d[0])
-
-        # check body length
-        self.assertEqual(23, d[11])
+            self.assertEqual("\xc7", d[0])
+            # check body length
+            self.assertEqual("\x17", d[11])
 
         body = d[GQTP_HEADER_SIZE:]
         (size, ) = struct.unpack("!I", d[8:12])
