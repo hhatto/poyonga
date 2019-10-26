@@ -8,6 +8,15 @@ python:
     - "3.5"
     - "3.6"
     - "pypy"
+    - "pypy3.5"
+
+matrix:
+    allow_failures:
+        - env: PEP8_VERSION=github
+    include:
+        - python: 3.7
+          dist: xenial    # required for Python 3.7
+          sudo: required  # required for Python 3.7
 
 before_install:
     - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then pip --quiet install mock; fi
