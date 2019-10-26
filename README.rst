@@ -2,6 +2,10 @@
 poyonga
 =======
 
+.. image:: https://img.shields.io/pypi/v/poyonga.svg
+    :target: https://pypi.org/project/poyonga/
+    :alt: PyPI Version
+
 .. image:: https://travis-ci.org/hhatto/poyonga.svg?branch=master
     :target: https://travis-ci.org/hhatto/poyonga
     :alt: Build status
