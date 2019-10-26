@@ -20,11 +20,12 @@ def get_send_data_for_gqtp(cmd, **kwargs):
     _cmd_arg = "".join(
         [" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
     _cmd = _cmd + _cmd_arg
-    size = struct.pack("!I", len(_cmd))
     if sys.version_info[0] == 3:
+        size = struct.pack("!I", len(_cmd.encode()))
         _header = b"".join([b"\xc7", b"\x00" * 7, size, b"\x00" * 12])
         _send_data = _header + _cmd.encode()
     else:
+        size = struct.pack("!I", len(_cmd))
         _header = "".join(["\xc7", "\x00" * 7, size, "\x00" * 12])
         _send_data = _header + _cmd
     return _send_data
