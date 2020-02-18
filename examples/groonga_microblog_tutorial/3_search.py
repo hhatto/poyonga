@@ -4,12 +4,13 @@ from poyonga import Groonga
 
 def _call(g, cmd, **kwargs):
     ret = g.call(cmd, **kwargs)
-    print "status:", ret.status
+    print("status:", ret.status)
     if cmd == 'select':
-        print "item:", len(ret.items)
+        print("item:", len(ret.items))
         for item in ret.items:
-            print item
-        print "=*=" * 30
+            print(item)
+        print("=*=" * 30)
+
 
 g = Groonga()
 

@@ -19,7 +19,7 @@ def _load(path):
     data = [{"_key": path, "name": filename, "content": content, "ext": ext}]
     data = json.dumps(data)
     ret = grn.call("load", table="Files", values=data)
-    print ret.body
+    print(ret.body)
 
 
 def execute(path):
@@ -31,7 +31,7 @@ def execute(path):
                 continue
             if ext not in TARGET_EXTS:
                 continue
-            print filename
+            print(filename)
             _load(filename)
         if os.path.isdir(filename):
             if dir_or_file in IGNORE_DIRS:
