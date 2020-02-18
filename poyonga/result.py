@@ -7,10 +7,9 @@ except ImportError:
     except ImportError:
         from io import StringIO
 try:
-    import ujson
+    import orjson as json
 except ImportError:
-    ujson = None
-import json
+    import json
 try:
     import msgpack
 except ImportError:
@@ -31,8 +30,8 @@ class GroongaResult(object):
             else:
                 raise Exception("msgpack is not support")
         elif output_type == 'json':
-            if ujson and encoding == 'utf-8':
-                _result = ujson.loads(data)
+            if encoding == 'utf-8':
+                _result = json.loads(data)
             else:
                 _result = json.loads(data, encoding=encoding)
         else:   # xml or other types...
