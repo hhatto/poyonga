@@ -22,10 +22,9 @@ class GroongaResult(object):
         self.raw_result = data
         if output_type == 'tsv':
             # TODO: not implement
-            c = csv.reader(StringIO(data), delimiter='\t')
+            csv.reader(StringIO(data), delimiter='\t')
         elif output_type == 'msgpack':
             if msgpack:
-                unpacker = msgpack.Unpacker()
                 _result = msgpack.unpackb(data)
             else:
                 raise Exception("msgpack is not support")
