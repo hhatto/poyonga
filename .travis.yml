@@ -4,16 +4,11 @@ os:
     - linux
 
 python:
-    - "2.7"
     - "3.5"
     - "3.6"
     - "3.7"
     - "3.8"
-    - "pypy"
     - "pypy3.5"
-
-before_install:
-    - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then pip --quiet install mock; fi
 
 install:
     - python setup.py install
