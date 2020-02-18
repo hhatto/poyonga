@@ -5,7 +5,7 @@ def _call(g, cmd, **kwargs):
     ret = g.call(cmd, **kwargs)
     print(ret.status)
     print(ret.body)
-    if cmd == 'select':
+    if cmd == "select":
         for item in ret.items:
             print(item)
         print("=*=" * 30)

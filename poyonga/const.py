@@ -1,6 +1,6 @@
 # protocol type
-GRN_PROTO_GQTP = 'gqtp'
-GRN_PROTO_HTTP = 'http'
+GRN_PROTO_GQTP = "gqtp"
+GRN_PROTO_HTTP = "http"
 
 # gqtp
 GQTP_HEADER_SIZE = 24

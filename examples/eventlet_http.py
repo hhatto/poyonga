@@ -12,10 +12,12 @@ def fetch(cmd, **kwargs):
     print("*" * 40)
 
 
-cmds = [("status", {}),
-        ("log_level", {"level": "warning"}),
-        # ("table_create", {"name": "Site", "flags": "TABLE_HASH_KEY"}),
-        ("select", {"table": "Site"})]
+cmds = [
+    ("status", {}),
+    ("log_level", {"level": "warning"}),
+    # ("table_create", {"name": "Site", "flags": "TABLE_HASH_KEY"}),
+    ("select", {"table": "Site"}),
+]
 pool = eventlet.GreenPool()
 for cmd, kwargs in cmds:
     pool.spawn_n(fetch, cmd, **kwargs)

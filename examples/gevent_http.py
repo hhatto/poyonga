@@ -14,10 +14,12 @@ def fetch(cmd, **kwargs):
     return ret.body
 
 
-cmds = [("status", {}),
-        ("log_level", {"level": "warning"}),
-        # ("table_create", {"name": "Site", "flags": "TABLE_HASH_KEY"}),
-        ("select", {"table": "Site"})]
+cmds = [
+    ("status", {}),
+    ("log_level", {"level": "warning"}),
+    # ("table_create", {"name": "Site", "flags": "TABLE_HASH_KEY"}),
+    ("select", {"table": "Site"}),
+]
 jobs = [gevent.spawn(fetch, cmd, **kwargs) for cmd, kwargs in cmds]
 gevent.joinall(jobs)
 results = [job.value for job in jobs]

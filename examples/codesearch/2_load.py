@@ -4,9 +4,9 @@ import re
 import json
 from poyonga import Groonga
 
-IGNORE_DIRS = ('.git', '.hg')
-IGNORE_EXTS = ('.pyc', '.egg', '.doctree', '.pickle')
-TARGET_EXTS = ('.py', '.pl', '.c', '.h')
+IGNORE_DIRS = (".git", ".hg")
+IGNORE_EXTS = (".pyc", ".egg", ".doctree", ".pickle")
+TARGET_EXTS = (".py", ".pl", ".c", ".h")
 
 
 def _load(path):
@@ -15,7 +15,11 @@ def _load(path):
     ext = os.path.splitext(filename)[1]
     content = open(path).read()
     data = """[{"_key":"%s","name":"%s","content":"%s","type":"%s"}]""" % (
-        path, filename, re.escape(content), ext)
+        path,
+        filename,
+        re.escape(content),
+        ext,
+    )
     data = [{"_key": path, "name": filename, "content": content, "ext": ext}]
     data = json.dumps(data)
     ret = grn.call("load", table="Files", values=data)
@@ -39,5 +43,5 @@ def execute(path):
             execute(filename)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     execute(sys.argv[1])

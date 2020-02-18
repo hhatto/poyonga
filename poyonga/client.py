@@ -5,6 +5,7 @@ from ctypes.util import find_library
 from ctypes import Structure, pointer, c_long, CDLL
 from poyonga.result import GroongaResult, GroongaSelectResult
 from poyonga.const import GQTP_HEADER_SIZE
+
 if sys.version_info[0] == 3:
     from urllib.request import urlopen
     from urllib.error import HTTPError
@@ -17,8 +18,7 @@ else:
 def get_send_data_for_gqtp(cmd, **kwargs):
     """create cmd & send data to groonga"""
     _cmd = cmd
-    _cmd_arg = "".join(
-        [" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
+    _cmd_arg = "".join([" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
     _cmd = _cmd + _cmd_arg
     if sys.version_info[0] == 3:
         size = struct.pack("!I", len(_cmd.encode()))
@@ -33,19 +33,18 @@ def get_send_data_for_gqtp(cmd, **kwargs):
 
 def convert_gqtp_result_data(_start, _end, status, raw_data):
     # struct result data
-    diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.) - \
-                (_start.tv_sec + _start.tv_nsec / 1000000000.)
+    diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.0) - (
+        _start.tv_sec + _start.tv_nsec / 1000000000.0
+    )
     if status != 0:
         status -= 65536
-        body = "\"\",[[\"\",\"\",0]]"
-        _data = "[[%d,%d.%d,%lf,%s]]" % (
-                status, _start.tv_sec, _start.tv_nsec, diff_time, body)
+        body = '"",[["","",0]]'
+        _data = "[[%d,%d.%d,%lf,%s]]" % (status, _start.tv_sec, _start.tv_nsec, diff_time, body)
     else:
         body = raw_data[GQTP_HEADER_SIZE:]
         if sys.version_info[0] == 3:
             body = body.decode()
-        _data = "[[%d,%d.%d,%lf],%s]" % (
-                status, _start.tv_sec, _start.tv_nsec, diff_time, body)
+        _data = "[[%d,%d.%d,%lf],%s]" % (status, _start.tv_sec, _start.tv_nsec, diff_time, body)
     return _data
 
 
@@ -60,12 +59,13 @@ class Groonga:
     class CTimeval(Structure):
         _fields_ = [("tv_sec", c_long), ("tv_usec", c_long)]
 
-    class _TimeSpec():
-        tv_sec = 0.
-        tv_nsec = 0.
+    class _TimeSpec:
+        tv_sec = 0.0
+        tv_nsec = 0.0
 
-    def __init__(self, host='localhost', port=10041, protocol='http',
-                 encoding='utf-8', prefix_path='/d/'):
+    def __init__(
+        self, host="localhost", port=10041, protocol="http", encoding="utf-8", prefix_path="/d/"
+    ):
         self.host = host
         self.port = port
         self.protocol = protocol
@@ -77,13 +77,13 @@ class Groonga:
 
     def _clock_gettime(self):
         ret = self._TimeSpec()
-        if hasattr(self.LIBRT, 'clock_gettime'):
+        if hasattr(self.LIBRT, "clock_gettime"):
             timespec = self.CTimeSpec()
             # 0: CLOCK_REALTIME
             self.LIBRT.clock_gettime(0, pointer(timespec))
             ret.tv_sec = timespec.tv_sec
             ret.tv_nsec = timespec.tv_nsec
-        else:   # MacOSX and other environment
+        else:  # MacOSX and other environment
             timespec = self.CTimeval()
             self.LIBC.gettimeofday(pointer(timespec), None)
             ret.tv_sec = timespec.tv_sec
@@ -98,8 +98,9 @@ class Groonga:
         s.send(get_send_data_for_gqtp(cmd, **kwargs))
         # recv groonga data
         raw_data = s.recv(8192)
-        proto, qtype, keylen, level, flags, status, size, opaque, cas \
-            = struct.unpack("!BBHBBHIIQ", raw_data[:GQTP_HEADER_SIZE])
+        proto, qtype, keylen, level, flags, status, size, opaque, cas = struct.unpack(
+            "!BBHBBHIIQ", raw_data[:GQTP_HEADER_SIZE]
+        )
         while len(raw_data) < size + GQTP_HEADER_SIZE:
             raw_data += s.recv(8192)
         _end = self._clock_gettime()
@@ -125,7 +126,7 @@ class Groonga:
             ret = self._call_http(cmd, **kwargs)
         else:
             ret = self._call_gqtp(cmd, **kwargs)
-        if cmd == 'select':
+        if cmd == "select":
             return GroongaSelectResult(ret, output_type, self.encoding)
         else:
             return GroongaResult(ret, output_type, self.encoding)
