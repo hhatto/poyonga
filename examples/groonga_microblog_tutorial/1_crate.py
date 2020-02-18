@@ -1,14 +1,14 @@
 from poyonga.client import Groonga
-import json
 
 g = Groonga()
 
 
 def _call(g, cmd, **kwargs):
     ret = g.call(cmd, **kwargs)
-    print ret.status
-    print ret.body
+    print(ret.status)
+    print(ret.body)
     return ret
+
 
 _call(g, "table_create", name="Users",
       flags="TABLE_HASH_KEY", key_type="ShortText")

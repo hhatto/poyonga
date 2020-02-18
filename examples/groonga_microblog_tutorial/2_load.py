@@ -1,16 +1,15 @@
-# coding: utf-8
-import json
 from poyonga.client import Groonga
 
 
 def _call(g, cmd, **kwargs):
     ret = g.call(cmd, **kwargs)
-    print ret.status
-    print ret.body
+    print(ret.status)
+    print(ret.body)
     if cmd == 'select':
         for item in ret.items:
-            print item
-        print "=*=" * 30
+            print(item)
+        print("=*=" * 30)
+
 
 g = Groonga()
 
