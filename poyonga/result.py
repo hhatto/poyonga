@@ -16,7 +16,7 @@ except ImportError:
     msgpack = None
 
 
-class GroongaResult(object):
+class GroongaResult:
 
     def __init__(self, data, output_type="json", encoding='utf-8'):
         self.raw_result = data

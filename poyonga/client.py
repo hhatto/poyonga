@@ -49,7 +49,7 @@ def convert_gqtp_result_data(_start, _end, status, raw_data):
     return _data
 
 
-class Groonga(object):
+class Groonga:
 
     LIBRT = CDLL(find_library("rt"))
     LIBC = CDLL(find_library("c"))
@@ -60,7 +60,7 @@ class Groonga(object):
     class CTimeval(Structure):
         _fields_ = [("tv_sec", c_long), ("tv_usec", c_long)]
 
-    class _TimeSpec(object):
+    class _TimeSpec():
         tv_sec = 0.
         tv_nsec = 0.
 
