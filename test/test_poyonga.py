@@ -135,5 +135,19 @@ class PoyongaFunctions(unittest.TestCase):
         self.assertEqual(d[0][0], -71)
 
 
+class PoyongaResult(unittest.TestCase):
+    def test_str(self):
+        status = 0
+        start_time = 0.0
+        elapsed = 1.0
+        raw_result = [[status, start_time, elapsed], False]
+        result = GroongaResult(json.dumps(raw_result))
+        self.assertEqual('<GroongaResult ' +
+                         f'status={status} ' +
+                         f'start_time={start_time} ' +
+                         f'elapsed={elapsed}>',
+                         str(result))
+
+
 if __name__ == "__main__":
     unittest.main()
