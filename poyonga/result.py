@@ -46,6 +46,12 @@ class GroongaResult:
         else:
             self.body = _result[1]
 
+    def __str__(self):
+        return f"<{type(self).__name__} " + \
+            f"status={self.status} " + \
+            f"start_time={self.start_time} " + \
+            f"elapsed={self.elapsed}>"
+
 
 class GroongaSelectResult(GroongaResult):
     def __init__(self, data, output_type="json", encoding="utf-8"):
