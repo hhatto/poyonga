@@ -6,14 +6,19 @@ poyonga
     :target: https://pypi.org/project/poyonga/
     :alt: PyPI Version
 
-.. image:: https://travis-ci.org/hhatto/poyonga.svg?branch=master
-    :target: https://travis-ci.org/hhatto/poyonga
+.. image:: https://github.com/hhatto/poyonga/workflows/Python%20package/badge.svg
+    :target: https://github.com/hhatto/poyonga/actions
     :alt: Build status
 
 Python Groonga_ Client.
 poyonga support to HTTP and GQTP protocol.
 
 .. _Groonga: http://groonga.org/
+
+
+Requrements
+===========
+* Python 3.6+
 
 
 Installation
