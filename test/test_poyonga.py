@@ -1,6 +1,4 @@
-# coding: utf-8
 import json
-import sys
 import struct
 import unittest
 
@@ -34,10 +32,7 @@ class PoyongaGQTPTestCase(unittest.TestCase):
     @patch("poyonga.client.socket.socket")
     def test_json_result_with_gqtp(self, mock_socket):
         m = Mock()
-        if sys.version_info[0] == 3:
-            _data = b"{}"
-        else:
-            _data = "{}"
+        _data = b"{}"
         _proto, _qtype, _keylen, _level, _flags, _status, _size, _opaque, _cas = (
             0xC7,
             0x02,
@@ -73,10 +68,7 @@ class PoyongaFunctions(unittest.TestCase):
     def test_get_send_data(self):
         d = get_send_data_for_gqtp("status")
         self.assertEqual(30, len(d))
-        if sys.version_info[0] == 3:
-            self.assertEqual(ord("\xc7"), d[0])
-        else:
-            self.assertEqual("\xc7", d[0])
+        self.assertEqual(ord("\xc7"), d[0])
         (size,) = struct.unpack("!I", d[8:12])
         self.assertEqual(6, size)
 
@@ -84,14 +76,9 @@ class PoyongaFunctions(unittest.TestCase):
         kwargs = {"table": "Site"}
         d = get_send_data_for_gqtp("select", **kwargs)
         self.assertEqual(45, len(d))
-        if sys.version_info[0] == 3:
-            self.assertEqual(ord("\xc7"), d[0])
-            # check body length
-            self.assertEqual(21, d[11])
-        else:
-            self.assertEqual("\xc7", d[0])
-            # check body length
-            self.assertEqual("\x15", d[11])
+        self.assertEqual(ord("\xc7"), d[0])
+        # check body length
+        self.assertEqual(21, d[11])
 
         body = d[GQTP_HEADER_SIZE:]
         (size,) = struct.unpack("!I", d[8:12])
@@ -101,14 +88,9 @@ class PoyongaFunctions(unittest.TestCase):
         kwargs = {"table": "Sitは"}
         d = get_send_data_for_gqtp("select", **kwargs)
         self.assertEqual(47, len(d))
-        if sys.version_info[0] == 3:
-            self.assertEqual(ord("\xc7"), d[0])
-            # check body length
-            self.assertEqual(23, d[11])
-        else:
-            self.assertEqual("\xc7", d[0])
-            # check body length
-            self.assertEqual("\x17", d[11])
+        self.assertEqual(ord("\xc7"), d[0])
+        # check body length
+        self.assertEqual(23, d[11])
 
         body = d[GQTP_HEADER_SIZE:]
         (size,) = struct.unpack("!I", d[8:12])

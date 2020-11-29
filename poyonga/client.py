@@ -1,18 +1,13 @@
-import sys
 import socket
 import struct
 from ctypes.util import find_library
 from ctypes import Structure, pointer, c_long, CDLL
+from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.parse import urlencode
+
 from poyonga.result import GroongaResult, GroongaSelectResult
 from poyonga.const import GQTP_HEADER_SIZE
-
-if sys.version_info[0] == 3:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
-    from urllib.parse import urlencode
-else:
-    from urllib2 import urlopen, HTTPError
-    from urllib import urlencode
 
 
 def get_send_data_for_gqtp(cmd, **kwargs):
@@ -20,14 +15,9 @@ def get_send_data_for_gqtp(cmd, **kwargs):
     _cmd = cmd
     _cmd_arg = "".join([" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
     _cmd = _cmd + _cmd_arg
-    if sys.version_info[0] == 3:
-        size = struct.pack("!I", len(_cmd.encode()))
-        _header = b"".join([b"\xc7", b"\x00" * 7, size, b"\x00" * 12])
-        _send_data = _header + _cmd.encode()
-    else:
-        size = struct.pack("!I", len(_cmd))
-        _header = "".join(["\xc7", "\x00" * 7, size, "\x00" * 12])
-        _send_data = _header + _cmd
+    size = struct.pack("!I", len(_cmd.encode()))
+    _header = b"".join([b"\xc7", b"\x00" * 7, size, b"\x00" * 12])
+    _send_data = _header + _cmd.encode()
     return _send_data
 
 
@@ -42,8 +32,7 @@ def convert_gqtp_result_data(_start, _end, status, raw_data):
         _data = "[[%d,%d.%d,%lf,%s]]" % (status, _start.tv_sec, _start.tv_nsec, diff_time, body)
     else:
         body = raw_data[GQTP_HEADER_SIZE:]
-        if sys.version_info[0] == 3:
-            body = body.decode()
+        body = body.decode()
         _data = "[[%d,%d.%d,%lf],%s]" % (status, _start.tv_sec, _start.tv_nsec, diff_time, body)
     return _data
 
