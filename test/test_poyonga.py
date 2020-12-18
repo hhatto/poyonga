@@ -1,3 +1,4 @@
+import io
 import json
 import struct
 import unittest
@@ -23,6 +24,52 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         ret = self.g.call("status")
         self.assertEqual(type(ret), GroongaResult)
         self.assertEqual(ret.status, 0)
+
+    @patch("poyonga.client.urlopen")
+    def test_load_list(self, mock_urlopen):
+        m = Mock()
+        m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
+        mock_urlopen.return_value = m
+        ret = self.g.call("load",
+                          table="Site",
+                          values=[{"_key": "groonga.org"}])
+        self.assertEqual(ret.body, 1)
+        request = mock_urlopen.call_args.args[0]
+        self.assertEqual([{"_key": "groonga.org"}],
+                         json.loads(request.data))
+        self.assertEqual({"Content-type": "application/json"},
+                         request.headers)
+
+    @patch("poyonga.client.urlopen")
+    def test_load_json(self, mock_urlopen):
+        m = Mock()
+        m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
+        mock_urlopen.return_value = m
+        ret = self.g.call("load",
+                          table="Site",
+                          values=json.dumps([{"_key": "groonga.org"}]))
+        self.assertEqual(ret.body, 1)
+        request = mock_urlopen.call_args.args[0]
+        self.assertEqual([{"_key": "groonga.org"}],
+                         json.loads(request.data))
+        self.assertEqual({"Content-type": "application/json"},
+                         request.headers)
+
+    @patch("poyonga.client.urlopen")
+    def test_load_io(self, mock_urlopen):
+        m = Mock()
+        m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
+        mock_urlopen.return_value = m
+        json_values = json.dumps([{"_key": "groonga.org"}])
+        ret = self.g.call("load",
+                          table="Site",
+                          values=io.BytesIO(json_values.encode()))
+        self.assertEqual(ret.body, 1)
+        request = mock_urlopen.call_args.args[0]
+        self.assertEqual([{"_key": "groonga.org"}],
+                         json.loads(request.data.read()))
+        self.assertEqual({"Content-type": "application/json"},
+                         request.headers)
 
 
 class PoyongaGQTPTestCase(unittest.TestCase):
