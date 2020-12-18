@@ -2,9 +2,14 @@ import socket
 import struct
 from ctypes.util import find_library
 from ctypes import Structure, pointer, c_long, CDLL
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from urllib.parse import urlencode
+
+try:
+    import orjson as json
+except ImportError:
+    import json
 
 from poyonga.result import GroongaResult, GroongaSelectResult
 from poyonga.const import GQTP_HEADER_SIZE
@@ -99,8 +104,18 @@ class Groonga:
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), self.prefix_path]
         url = "".join(domain) + cmd
+        post_data = None
         if kwargs:
+            if cmd == "load" and "values" in kwargs:
+                post_data = kwargs.pop("values")
             url = "".join([url, "?", urlencode(kwargs)])
+        if post_data:
+            content_type = "application/json"
+            if isinstance(post_data, list):
+                post_data = json.dumps(post_data, indent=True)
+            if isinstance(post_data, str):
+                post_data = post_data.encode()
+            url = Request(url, post_data, {"content-type": content_type})
         try:
             _data = urlopen(url).read()
         except HTTPError as msg:
