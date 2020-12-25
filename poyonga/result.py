@@ -15,10 +15,14 @@ try:
     import msgpack
 except ImportError:
     msgpack = None
+try:
+    import pyarrow as pa
+except ImportError:
+    pa = None
 
 
 class GroongaResult:
-    def __init__(self, data, output_type="json", encoding="utf-8"):
+    def __init__(self, data, output_type="json", encoding="utf-8", content_type=None):
         self.raw_result = data
         if output_type == "tsv":
             # TODO: not implement
@@ -27,12 +31,15 @@ class GroongaResult:
             if msgpack:
                 _result = msgpack.unpackb(data)
             else:
-                raise Exception("msgpack is not support")
+                raise Exception("msgpack is not supported")
         elif output_type == "json":
             if encoding == "utf-8":
                 _result = json.loads(data)
             else:
                 _result = json.loads(data, encoding=encoding)
+        elif self._is_apache_arrow(content_type):
+            self._parse_apache_arrow(data)
+            return
         else:  # xml or other types...
             # TODO: not implement
             pass
@@ -46,6 +53,35 @@ class GroongaResult:
         else:
             self.body = _result[1]
 
+    def _is_apache_arrow(self, content_type):
+        return content_type == "application/x-apache-arrow-streaming"
+
+    def _parse_apache_arrow(self, data):
+        if not pa:
+            raise Exception("Apache Arrow is not supported")
+
+        def is_metadata(schema):
+            if not schema.metadata:
+                return False
+            return schema.metadata.get(b'GROONGA:data_type') == b'metadata'
+
+        source = pa.BufferReader(data)
+        while source.tell() < source.size():
+            with pa.RecordBatchStreamReader(source) as reader:
+                schema = reader.schema
+                table = reader.read_all()
+                if is_metadata(schema):
+                    self.status = table['return_code'][0].as_py()
+                    start_time_ns = table['start_time'][0].value
+                    start_time_s = start_time_ns / 1_000_000_000
+                    self.start_time = start_time_s
+                    self.elapsed = table['elapsed_time'][0].as_py()
+                else:
+                    self._parse_apache_arrow_body(table)
+
+    def _parse_apache_arrow_body(self, table):
+        raise NotImplementedError("Apache Arrow data is not supported")
+
     def __str__(self):
         return f"<{type(self).__name__} " + \
             f"status={self.status} " + \
@@ -54,8 +90,10 @@ class GroongaResult:
 
 
 class GroongaSelectResult(GroongaResult):
-    def __init__(self, data, output_type="json", encoding="utf-8"):
-        super(GroongaSelectResult, self).__init__(data, output_type, encoding)
+    def __init__(self, data, output_type="json", encoding="utf-8", content_type=None):
+        super(GroongaSelectResult, self).__init__(data, output_type, encoding, content_type)
+        if self._is_apache_arrow(content_type):
+            return
         self.items = []
         self.hit_num = -1  # default is -1 (Error)
         if len(self.body) != 0:
@@ -63,3 +101,19 @@ class GroongaSelectResult(GroongaResult):
         if self.status == 0:
             keys = [k[0] for k in self.body[0][1]]
             self.items = [dict(list(zip(keys, item))) for item in self.body[0][2:]]
+
+    def _parse_apache_arrow_body(self, table):
+        # {
+        #    'column1'=[value1, value2, ...],
+        #    'column2'=[value1, value2, ...],
+        #    ...
+        # }
+        self.body = table.to_pydict()
+        # Not supported yet
+        self.hit_num = -1
+        if self.status == 0:
+            keys = self.body.keys()
+            items = zip(*self.body.values())
+            self.items = [dict(list(zip(keys, item))) for item in items]
+        else:
+            self.items = []

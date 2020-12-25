@@ -99,7 +99,9 @@ class Groonga:
             raw_data += s.recv(8192)
         _end = self._clock_gettime()
         s.close()
-        return convert_gqtp_result_data(_start, _end, status, raw_data)
+        metadata = {}
+        _data = convert_gqtp_result_data(_start, _end, status, raw_data)
+        return metadata, _data
 
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), self.prefix_path]
@@ -117,20 +119,28 @@ class Groonga:
                 post_data = post_data.encode()
             url = Request(url, post_data, {"content-type": content_type})
         try:
-            _data = urlopen(url).read()
+            response = urlopen(url)
+            headers = response.headers
+            _data = response.read()
         except HTTPError as msg:
+            headers = msg.headers
             _data = msg.read()
-        return _data
+        metadata = {
+            'content_type': headers.get('content-type'),
+        }
+        return metadata, _data
 
     def call(self, cmd, **kwargs):
         output_type = kwargs.get("output_type")
         if not output_type:
             output_type = "json"
         if self.protocol == "http":
-            ret = self._call_http(cmd, **kwargs)
+            metadata, data = self._call_http(cmd, **kwargs)
         else:
-            ret = self._call_gqtp(cmd, **kwargs)
+            metadata, data = self._call_gqtp(cmd, **kwargs)
+        metadata['output_type'] = output_type
+        metadata['encoding'] = self.encoding
         if cmd == "select":
-            return GroongaSelectResult(ret, output_type, self.encoding)
+            return GroongaSelectResult(data, **metadata)
         else:
-            return GroongaResult(ret, output_type, self.encoding)
+            return GroongaResult(data, **metadata)
