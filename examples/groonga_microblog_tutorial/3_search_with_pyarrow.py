@@ -33,23 +33,23 @@ def _call(g, cmd, **kwargs):
 
 g = Groonga()
 
-# _call(
-#     g,
-#     "select",
-#     table="Users",
-#     match_columns="name,location_str,description",
-#     query="東京",
-#     output_columns="_key,name",
-# )
-# _call_with_apachearrow(
-#     g,
-#     "select",
-#     table="Users",
-#     match_columns="name,location_str,description",
-#     query="東京",
-#     output_type="apache-arrow",
-#     output_columns="_key,name",
-# )
+_call(
+    g,
+    "select",
+    table="Users",
+    match_columns="name,location_str,description",
+    query="東京",
+    output_columns="_key,name",
+)
+_call_with_apachearrow(
+    g,
+    "select",
+    table="Users",
+    match_columns="name,location_str,description",
+    query="東京",
+    output_type="apache-arrow",
+    output_columns="_key,name",
+)
 _call(
     g,
     "select",
@@ -66,5 +66,4 @@ _call_with_apachearrow(
     output_columns="posted_by.name,comment,last_modified",
     output_type="apache-arrow",
     drilldown="hash_tags,posted_by",
-    drilldown_output_column="_id",
 )
