@@ -11,6 +11,11 @@ from poyonga import Groonga, GroongaResult
 from poyonga.client import get_send_data_for_gqtp, convert_gqtp_result_data, GQTP_HEADER_SIZE
 from poyonga.const import GRN_STATUS_UNSUPPORTED_COMMAND_VERSION
 
+try:
+    import pyarrow as pa
+except ImportError:
+    pa = None
+
 
 class PoyongaHTTPTestCase(unittest.TestCase):
     def setUp(self):
@@ -70,6 +75,60 @@ class PoyongaHTTPTestCase(unittest.TestCase):
                          json.loads(request.data.read()))
         self.assertEqual({"Content-type": "application/json"},
                          request.headers)
+
+    @unittest.skipUnless(pa, "require pyarrow")
+    @patch("poyonga.client.urlopen")
+    def test_select_apache_arrow(self, mock_urlopen):
+        m = Mock()
+        metadata_fields = [
+            pa.field("return_code", pa.int32()),
+            pa.field("start_time", pa.timestamp("ns")),
+            pa.field("elapsed_time", pa.float64()),
+        ]
+        metadata_metadata = {
+            "GROONGA:data_type": "metadata",
+        }
+        metadata_schema = pa.schema(metadata_fields, metadata_metadata)
+        sec_to_ns = 1_000_000_000
+        metadata = [
+            [0],
+            [int(1337566253.89858 * sec_to_ns)],
+            [0.000354],
+        ]
+        metadata_record_batch = pa.record_batch(metadata,
+                                                schema=metadata_schema)
+        result_set_fields = [
+            pa.field("name", pa.string()),
+        ]
+        result_set_metadata = {
+            "GROONGA:n_hits": "29"
+        }
+        result_set_schema = pa.schema(result_set_fields, result_set_metadata)
+        result_set = [
+            ["Groonga", "poyonga"],
+        ]
+        result_set_record_batch = pa.record_batch(result_set,
+                                                  schema=result_set_schema)
+        output = pa.BufferOutputStream()
+        with pa.RecordBatchStreamWriter(output, metadata_schema) as writer:
+            writer.write(metadata_record_batch)
+        with pa.RecordBatchStreamWriter(output, result_set_schema) as writer:
+            writer.write(result_set_record_batch)
+        m.read.side_effect = [output.getvalue().to_pybytes()]
+        m.headers = {
+            "content-type": "application/x-apache-arrow-streaming",
+        }
+        mock_urlopen.return_value = m
+        ret = self.g.call("select",
+                          command_version="3",
+                          table="Site",
+                          output_type="apache-arrow")
+        self.assertEqual(ret.status, 0)
+        self.assertEqual(ret.start_time, 1337566253.89858)
+        self.assertEqual(ret.elapsed, 0.000354)
+        self.assertEqual(ret.hit_num, 29)
+        self.assertEqual(ret.items,
+                         pa.Table.from_batches([result_set_record_batch]))
 
 
 class PoyongaGQTPTestCase(unittest.TestCase):
