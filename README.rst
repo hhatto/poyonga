@@ -128,7 +128,8 @@ and call with ``output_type="apache-arrow"`` option
 
 
 more information:
-* https://groonga.org/docs/reference/commands/load.html
+
+- https://groonga.org/docs/reference/commands/load.html
 
 
 example code
