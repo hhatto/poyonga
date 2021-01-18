@@ -97,6 +97,39 @@ If you use the `Custom prefix path`_ and `Multi databases`_ , specify `prefix_pa
     # default is '/d/'
     g = Groonga(prefix_path='/db2/')
 
+with Apache Arrow
+-----------------
+Groonga supports `Apache Arrow`_, use it with ``load`` and ``select`` commands.
+
+use poyonga with Apache Arrow, you need pyarrow_ .
+
+.. _`Apache Arrow`: https://arrow.apache.org/
+.. _pyarrow: https://pypi.org/project/pyarrow/
+
+requrie pyarrow::
+
+    $ pip install pyarrow
+
+and call with ``output_type="apache-arrow"`` option
+
+.. code-block:: python
+
+    from poyonga import Groonga
+
+    g = Groonga()
+    g.call(
+        "select",
+        table="Users",
+        match_columns="name,location_str,description",
+        query="東京",
+        output_type="apache-arrow",
+        output_columns="_key,name",
+    )
+
+
+more information:
+* https://groonga.org/docs/reference/commands/load.html
+
 
 example code
 ------------
