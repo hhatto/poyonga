@@ -66,21 +66,23 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         m = Mock()
         m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
         mock_urlopen.return_value = m
-        values = [pa.array(["groonga.org"])]
-        batch = pa.record_batch(values, names=["_key"])
+        data = [pa.array(["groonga.org"])]
+        batch = pa.record_batch(data, names=["_key"])
         sink = pa.BufferOutputStream()
         with pa.ipc.new_stream(sink, batch.schema) as writer:
             writer.write_batch(batch)
-        values = sink.getvalue().to_pybytes()
 
-        ret = self.g.call("load", table="Site", values=values, input_type="apache-arrow")
+        ret = self.g.call(
+            "load",
+            table="Site",
+            values=sink.getvalue().to_pybytes(),
+            input_type="apache-arrow",
+        )
         self.assertEqual(ret.body, 1)
         request = mock_urlopen.call_args[0][0]
-        print(request.data)
 
         reader = pa.ipc.open_stream(request.data)
         batches = [b for b in reader]
-        print(reader.schema, batches[0].to_pydict())
         self.assertEqual({"_key": ["groonga.org"]}, batches[0].to_pydict())
         self.assertEqual({"Content-type": "application/x-apache-arrow-streaming"},
                          request.headers)
