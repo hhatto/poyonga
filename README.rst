@@ -110,7 +110,7 @@ requrie pyarrow::
 
     $ pip install pyarrow
 
-and call with ``output_type="apache-arrow"`` option
+and call with ``output_type="apache-arrow"`` option:
 
 .. code-block:: python
 
@@ -125,6 +125,25 @@ and call with ``output_type="apache-arrow"`` option
         output_type="apache-arrow",
         output_columns="_key,name",
     )
+
+load with ``input_type="apache-arrow"``:
+
+.. code-block:: python
+
+    import pyarrow as pa
+    from poyonga import Groonga
+
+    # use Apache Arrow IPC Streaming Format
+    data = [pa.array(["groonga.org"])]
+    batch = pa.record_batch(data, names=["_key"])
+    sink = pa.BufferOutputStream()
+    with pa.ipc.new_stream(sink, batch.schema) as writer:
+        writer.write_batch(batch)
+    buf = sink.getvalue()
+    values = buf.to_pybytes()
+
+    g = Groonga()
+    g.call("load", table="Site", values=values, input_type="apache-arrow")
 
 
 more information:
