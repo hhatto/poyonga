@@ -112,7 +112,10 @@ class Groonga:
                 post_data = kwargs.pop("values")
             url = "".join([url, "?", urlencode(kwargs)])
         if post_data:
-            content_type = "application/json"
+            if kwargs.get("input_type") == "apache-arrow":
+                content_type = "application/x-apache-arrow-streaming"
+            else:
+                content_type = "application/json"
             if isinstance(post_data, list):
                 post_data = json.dumps(post_data, indent=True)
             if isinstance(post_data, str):
