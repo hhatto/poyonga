@@ -27,6 +27,20 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         self.assertEqual(ret.status, 0)
 
 
+class PoyongaHTTPSTestCase(unittest.TestCase):
+    def setUp(self):
+        self.g = Groonga(protocol="https")
+
+    @patch("poyonga.client.urlopen")
+    def test_json_result_with_http(self, mock_urlopen):
+        m = Mock()
+        m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], {}]"]
+        mock_urlopen.return_value = m
+        ret = self.g.call("status")
+        self.assertEqual(type(ret), GroongaResult)
+        self.assertEqual(ret.status, 0)
+
+
 class PoyongaGQTPTestCase(unittest.TestCase):
     def setUp(self):
         self.g = Groonga(protocol="gqtp")
