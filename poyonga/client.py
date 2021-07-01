@@ -117,7 +117,7 @@ class Groonga:
             else:
                 content_type = "application/json"
             if isinstance(post_data, list):
-                post_data = json.dumps(post_data, indent=True)
+                post_data = json.dumps(post_data, indent=1)
             if isinstance(post_data, str):
                 post_data = post_data.encode()
             url = Request(url, post_data, {"content-type": content_type})
