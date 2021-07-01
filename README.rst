@@ -6,14 +6,19 @@ poyonga
     :target: https://pypi.org/project/poyonga/
     :alt: PyPI Version
 
-.. image:: https://travis-ci.org/hhatto/poyonga.svg?branch=master
-    :target: https://travis-ci.org/hhatto/poyonga
+.. image:: https://github.com/hhatto/poyonga/workflows/Python%20package/badge.svg
+    :target: https://github.com/hhatto/poyonga/actions
     :alt: Build status
 
 Python Groonga_ Client.
 poyonga support to HTTP and GQTP protocol.
 
 .. _Groonga: http://groonga.org/
+
+
+Requrements
+===========
+* Python 3.6+
 
 
 Installation
@@ -91,6 +96,59 @@ If you use the `Custom prefix path`_ and `Multi databases`_ , specify `prefix_pa
 
     # default is '/d/'
     g = Groonga(prefix_path='/db2/')
+
+with Apache Arrow
+-----------------
+Groonga supports `Apache Arrow`_, use it with ``load`` and ``select`` commands.
+
+use poyonga with Apache Arrow, you need pyarrow_ .
+
+.. _`Apache Arrow`: https://arrow.apache.org/
+.. _pyarrow: https://pypi.org/project/pyarrow/
+
+requrie pyarrow::
+
+    $ pip install pyarrow
+
+and call with ``output_type="apache-arrow"`` option:
+
+.. code-block:: python
+
+    from poyonga import Groonga
+
+    g = Groonga()
+    g.call(
+        "select",
+        table="Users",
+        match_columns="name,location_str,description",
+        query="東京",
+        output_type="apache-arrow",
+        output_columns="_key,name",
+    )
+
+load with ``input_type="apache-arrow"``:
+
+.. code-block:: python
+
+    import pyarrow as pa
+    from poyonga import Groonga
+
+    # use Apache Arrow IPC Streaming Format
+    data = [pa.array(["groonga.org"])]
+    batch = pa.record_batch(data, names=["_key"])
+    sink = pa.BufferOutputStream()
+    with pa.ipc.new_stream(sink, batch.schema) as writer:
+        writer.write_batch(batch)
+    buf = sink.getvalue()
+    values = buf.to_pybytes()
+
+    g = Groonga()
+    g.call("load", table="Site", values=values, input_type="apache-arrow")
+
+
+more information:
+
+- https://groonga.org/docs/reference/commands/load.html
 
 
 example code

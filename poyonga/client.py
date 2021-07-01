@@ -1,18 +1,18 @@
-import sys
 import socket
 import struct
 from ctypes.util import find_library
 from ctypes import Structure, pointer, c_long, CDLL
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+from urllib.parse import urlencode
+
+try:
+    import orjson as json
+except ImportError:
+    import json
+
 from poyonga.result import GroongaResult, GroongaSelectResult
 from poyonga.const import GQTP_HEADER_SIZE
-
-if sys.version_info[0] == 3:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
-    from urllib.parse import urlencode
-else:
-    from urllib2 import urlopen, HTTPError
-    from urllib import urlencode
 
 
 def get_send_data_for_gqtp(cmd, **kwargs):
@@ -20,14 +20,9 @@ def get_send_data_for_gqtp(cmd, **kwargs):
     _cmd = cmd
     _cmd_arg = "".join([" --%s '%s'" % (d, str(kwargs[d]).replace("'", r"\'")) for d in kwargs])
     _cmd = _cmd + _cmd_arg
-    if sys.version_info[0] == 3:
-        size = struct.pack("!I", len(_cmd.encode()))
-        _header = b"".join([b"\xc7", b"\x00" * 7, size, b"\x00" * 12])
-        _send_data = _header + _cmd.encode()
-    else:
-        size = struct.pack("!I", len(_cmd))
-        _header = "".join(["\xc7", "\x00" * 7, size, "\x00" * 12])
-        _send_data = _header + _cmd
+    size = struct.pack("!I", len(_cmd.encode()))
+    _header = b"".join([b"\xc7", b"\x00" * 7, size, b"\x00" * 12])
+    _send_data = _header + _cmd.encode()
     return _send_data
 
 
@@ -42,8 +37,7 @@ def convert_gqtp_result_data(_start, _end, status, raw_data):
         _data = "[[%d,%d.%d,%lf,%s]]" % (status, _start.tv_sec, _start.tv_nsec, diff_time, body)
     else:
         body = raw_data[GQTP_HEADER_SIZE:]
-        if sys.version_info[0] == 3:
-            body = body.decode()
+        body = body.decode()
         _data = "[[%d,%d.%d,%lf],%s]" % (status, _start.tv_sec, _start.tv_nsec, diff_time, body)
     return _data
 
@@ -105,28 +99,51 @@ class Groonga:
             raw_data += s.recv(8192)
         _end = self._clock_gettime()
         s.close()
-        return convert_gqtp_result_data(_start, _end, status, raw_data)
+        metadata = {}
+        _data = convert_gqtp_result_data(_start, _end, status, raw_data)
+        return metadata, _data
 
     def _call_http(self, cmd, **kwargs):
         domain = [self.protocol, "://", self.host, ":", str(self.port), self.prefix_path]
         url = "".join(domain) + cmd
+        post_data = None
         if kwargs:
+            if cmd == "load" and "values" in kwargs:
+                post_data = kwargs.pop("values")
             url = "".join([url, "?", urlencode(kwargs)])
+        if post_data:
+            if kwargs.get("input_type") == "apache-arrow":
+                content_type = "application/x-apache-arrow-streaming"
+            else:
+                content_type = "application/json"
+            if isinstance(post_data, list):
+                post_data = json.dumps(post_data, indent=True)
+            if isinstance(post_data, str):
+                post_data = post_data.encode()
+            url = Request(url, post_data, {"content-type": content_type})
         try:
-            _data = urlopen(url).read()
+            response = urlopen(url)
+            headers = response.headers
+            _data = response.read()
         except HTTPError as msg:
+            headers = msg.headers
             _data = msg.read()
-        return _data
+        metadata = {
+            "content_type": headers.get("content-type"),
+        }
+        return metadata, _data
 
     def call(self, cmd, **kwargs):
         output_type = kwargs.get("output_type")
         if not output_type:
             output_type = "json"
         if self.protocol == "http" or self.protocol == "https":
-            ret = self._call_http(cmd, **kwargs)
+            metadata, data = self._call_http(cmd, **kwargs)
         else:
-            ret = self._call_gqtp(cmd, **kwargs)
+            metadata, data = self._call_gqtp(cmd, **kwargs)
+        metadata["output_type"] = output_type
+        metadata["encoding"] = self.encoding
         if cmd == "select":
-            return GroongaSelectResult(ret, output_type, self.encoding)
+            return GroongaSelectResult(data, **metadata)
         else:
-            return GroongaResult(ret, output_type, self.encoding)
+            return GroongaResult(data, **metadata)
