@@ -15,6 +15,10 @@ from poyonga.result import GroongaResult, GroongaSelectResult
 from poyonga.const import GQTP_HEADER_SIZE
 
 
+def _usec2nsec(nsec):
+    return nsec * (1000000000 / 1000000)
+
+
 def get_send_data_for_gqtp(cmd, **kwargs):
     """create cmd & send data to groonga"""
     _cmd = cmd
@@ -66,9 +70,6 @@ class Groonga:
         self.encoding = encoding
         self.prefix_path = prefix_path
 
-    def _usec2nsec(self, nsec):
-        return nsec * (1000000000 / 1000000)
-
     def _clock_gettime(self):
         ret = self._TimeSpec()
         if hasattr(self.LIBRT, "clock_gettime"):
@@ -81,7 +82,7 @@ class Groonga:
             timespec = self.CTimeval()
             self.LIBC.gettimeofday(pointer(timespec), None)
             ret.tv_sec = timespec.tv_sec
-            ret.tv_nsec = self._usec2nsec(timespec.tv_usec)
+            ret.tv_nsec = _usec2nsec(timespec.tv_usec)
         return ret
 
     def _call_gqtp(self, cmd, **kwargs):
