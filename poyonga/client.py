@@ -137,7 +137,7 @@ class Groonga:
         output_type = kwargs.get("output_type")
         if not output_type:
             output_type = "json"
-        if self.protocol == "http":
+        if self.protocol == "http" or self.protocol == "https":
             metadata, data = self._call_http(cmd, **kwargs)
         else:
             metadata, data = self._call_gqtp(cmd, **kwargs)
