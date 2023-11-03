@@ -1,5 +1,6 @@
-from poyonga import Groonga
 import eventlet
+
+from poyonga import Groonga
 
 eventlet.monkey_patch()
 

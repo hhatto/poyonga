@@ -2,13 +2,14 @@ import io
 import json
 import struct
 import unittest
+from unittest.mock import Mock, patch
 
-try:
-    from mock import patch, Mock
-except ImportError:
-    from unittest.mock import patch, Mock
 from poyonga import Groonga, GroongaResult
-from poyonga.client import get_send_data_for_gqtp, convert_gqtp_result_data, GQTP_HEADER_SIZE
+from poyonga.client import (
+    GQTP_HEADER_SIZE,
+    convert_gqtp_result_data,
+    get_send_data_for_gqtp,
+)
 from poyonga.const import GRN_STATUS_UNSUPPORTED_COMMAND_VERSION
 
 try:
