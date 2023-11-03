@@ -45,7 +45,6 @@ def convert_gqtp_result_data(_start, _end, status, raw_data):
 
 
 class Groonga:
-
     LIBRT = CDLL(find_library("rt"))
     LIBC = CDLL(find_library("c"))
 
