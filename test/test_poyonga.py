@@ -105,6 +105,61 @@ class PoyongaHTTPTestCase(unittest.TestCase):
 
     @unittest.skipUnless(pa, "require pyarrow")
     @patch("poyonga.client.urlopen")
+    def test_error_apache_arrow(self, mock_urlopen):
+        m = Mock()
+        metadata_fields = [
+            pa.field("return_code", pa.int32()),
+            pa.field("start_time", pa.timestamp("ns")),
+            pa.field("elapsed_time", pa.float64()),
+            pa.field("error_message", pa.string()),
+            pa.field("error_file", pa.string()),
+            pa.field("error_line", pa.uint32()),
+            pa.field("error_function", pa.string()),
+            pa.field("error_input_file", pa.string()),
+            pa.field("error_input_line", pa.int32()),
+            pa.field("error_input_command", pa.string()),
+        ]
+        metadata_metadata = {
+            "GROONGA:data_type": "metadata",
+        }
+        metadata_schema = pa.schema(metadata_fields, metadata_metadata)
+        sec_to_ns = 1_000_000_000
+        metadata = [
+            [-63],
+            [int(1337566253.89858 * sec_to_ns)],
+            [0.000354],
+            ["Syntax error: <nonexistent||>"],
+            ["grn_ecmascript.lemon"],
+            [29],
+            ["yy_syntax_error"],
+            [None],
+            [None],
+            [None],
+        ]
+        metadata_record_batch = pa.record_batch(metadata,
+                                                schema=metadata_schema)
+        output = pa.BufferOutputStream()
+        with pa.RecordBatchStreamWriter(output, metadata_schema) as writer:
+            writer.write(metadata_record_batch)
+        m.read.side_effect = [output.getvalue().to_pybytes()]
+        m.headers = {
+            "content-type": "application/x-apache-arrow-streaming",
+        }
+        mock_urlopen.return_value = m
+        ret = self.g.call("select",
+                          command_version="3",
+                          table="Site",
+                          filter="nonexistent",
+                          output_type="apache-arrow")
+        self.assertEqual(ret.status, -63)
+        self.assertEqual(ret.start_time, 1337566253.89858)
+        self.assertEqual(ret.elapsed, 0.000354)
+        self.assertEqual(ret.body, "Syntax error: <nonexistent||>")
+        self.assertEqual(ret.hit_num, -1)
+        self.assertEqual(ret.items, None)
+
+    @unittest.skipUnless(pa, "require pyarrow")
+    @patch("poyonga.client.urlopen")
     def test_select_apache_arrow(self, mock_urlopen):
         m = Mock()
         metadata_fields = [
