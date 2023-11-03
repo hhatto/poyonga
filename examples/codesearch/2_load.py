@@ -1,7 +1,8 @@
-import sys
+import json
 import os
 import re
-import json
+import sys
+
 from poyonga import Groonga
 
 IGNORE_DIRS = (".git", ".hg")

@@ -1,4 +1,5 @@
 import sys
+
 from poyonga import Groonga
 
 query = "content:@%s" % sys.argv[1]

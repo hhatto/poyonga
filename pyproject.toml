@@ -1,0 +1,58 @@
+[project]
+name = "poyonga"
+description = "Python Groonga Client"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Hideo Hattori", email = "hhatto.jp@gmail.com"},
+]
+readme = "README.rst"
+keywords = [
+    "groonga",
+    "http",
+    "gqtp",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.8"
+dependencies = []
+dynamic = ["version"]
+
+[project.urls]
+Repository = "https://github.com/hhatto/poyonga"
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+]
+
+[tool.setuptools]
+packages = ["poyonga"]
+
+[tool.setuptools.dynamic]
+version = {attr = "poyonga.__version__"}
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+select = [
+    "E", "W", "F", "I", "C", "B",
+]
+ignore = [
+    "E501",
+    "B008",
+    "C901",
+]
+extend-exclude = [
+    "examples",
+]
+line-length = 120

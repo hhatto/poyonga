@@ -1,18 +1,18 @@
 import socket
 import struct
+from ctypes import CDLL, Structure, c_long, pointer
 from ctypes.util import find_library
-from ctypes import Structure, pointer, c_long, CDLL
-from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 try:
     import orjson as json
 except ImportError:
     import json
 
-from poyonga.result import GroongaResult, GroongaSelectResult
 from poyonga.const import GQTP_HEADER_SIZE
+from poyonga.result import GroongaResult, GroongaSelectResult
 
 
 def _usec2nsec(nsec):
