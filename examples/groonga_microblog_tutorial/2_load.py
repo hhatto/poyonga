@@ -1,3 +1,4 @@
+from poyonga import InputType
 from poyonga.client import Groonga
 
 
@@ -46,7 +47,7 @@ users = """\
 """
 
 
-_call(g, "load", table="Users", values="".join(users.splitlines()))
+_call(g, "load", table="Users", values="".join(users.splitlines()), input_type=InputType.JSON)
 _call(g, "select", table="Users")
 
 

@@ -126,6 +126,9 @@ and call with ``output_type="apache-arrow"`` option:
         output_columns="_key,name",
     )
 
+.. note:: `output_type` can also specify `poyonga.const.OutputType.APACHE_ARROW`.
+    If is not specified, `poyonga.const.OutputType.JSON` is specified by default.
+
 load with ``input_type="apache-arrow"``:
 
 .. code-block:: python
@@ -144,6 +147,9 @@ load with ``input_type="apache-arrow"``:
 
     g = Groonga()
     g.call("load", table="Site", values=values, input_type="apache-arrow")
+
+.. note:: `input_type` can also specify `poyonga.const.InputType.APACHE_ARROW`.
+    If is not specified, `poyonga.const.InputType.JSON` is specified by default.
 
 
 more information:
