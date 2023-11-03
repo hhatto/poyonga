@@ -1,5 +1,5 @@
-# coding: utf-8
 from poyonga import Groonga
+from poyonga.const import OutputType
 
 
 def _call_with_apachearrow(g, cmd, **kwargs):
@@ -27,7 +27,7 @@ _call_with_apachearrow(
     table="Comment",  # NOTE: invalid table name
     filter="last_modified<=1268802000",
     output_columns="posted_by.name,comment,last_modified",
-    output_type="apache-arrow",
+    output_type=OutputType.APACHE_ARROW,
     drilldown="hash_tags,posted_by",
     drilldown_output_column="_id",
 )
