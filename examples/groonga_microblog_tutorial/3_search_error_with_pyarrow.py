@@ -21,7 +21,6 @@ def _call_with_apachearrow(g, cmd, **kwargs):
 
 g = Groonga()
 
-# NOTE: Groonga's Apache Arrow output doesn't support drilldowns yet
 _call_with_apachearrow(
     g,
     "select",
