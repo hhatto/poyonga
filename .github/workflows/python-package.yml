@@ -35,6 +35,9 @@ jobs:
     - name: Lint with ruff
       run: |
         ruff check .
+    - name: Check code format with black
+      run: |
+        black --check --diff .
     - name: Test with pytest
       run: |
         pytest
