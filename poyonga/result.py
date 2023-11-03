@@ -27,6 +27,7 @@ class GroongaResult:
         if output_type == "tsv" or content_type == "text/tab-separated-values":
             # TODO: not implement
             csv.reader(StringIO(data), delimiter="\t")
+            raise NotImplementedError(f"not implement output_type: {output_type}")
         elif output_type == "msgpack" or content_type == "application/x-msgpack":
             if msgpack:
                 _result = msgpack.unpackb(data)
@@ -37,12 +38,15 @@ class GroongaResult:
                 _result = json.loads(data)
             else:
                 _result = json.loads(data, encoding=encoding)
-        elif self._is_apache_arrow(content_type):
-            self._parse_apache_arrow(data)
-            return
+        elif output_type == "apache-arrow" and not self._is_apache_arrow(content_type):
+            if self._is_apache_arrow(content_type):
+                self._parse_apache_arrow(data)
+                return
+            else:
+                raise Exception("groonga is not supported Apache Arrow output type")
         else:  # xml or other types...
             # TODO: not implement
-            pass
+            raise NotImplementedError(f"not implement output_type: {output_type}")
         self.status = _result[0][0]
         self.start_time = _result[0][1]
         self.elapsed = _result[0][2]
