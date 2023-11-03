@@ -36,30 +36,22 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         m = Mock()
         m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
         mock_urlopen.return_value = m
-        ret = self.g.call("load",
-                          table="Site",
-                          values=[{"_key": "groonga.org"}])
+        ret = self.g.call("load", table="Site", values=[{"_key": "groonga.org"}])
         self.assertEqual(ret.body, 1)
         request = mock_urlopen.call_args[0][0]
-        self.assertEqual([{"_key": "groonga.org"}],
-                         json.loads(request.data))
-        self.assertEqual({"Content-type": "application/json"},
-                         request.headers)
+        self.assertEqual([{"_key": "groonga.org"}], json.loads(request.data))
+        self.assertEqual({"Content-type": "application/json"}, request.headers)
 
     @patch("poyonga.client.urlopen")
     def test_load_json(self, mock_urlopen):
         m = Mock()
         m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
         mock_urlopen.return_value = m
-        ret = self.g.call("load",
-                          table="Site",
-                          values=json.dumps([{"_key": "groonga.org"}]))
+        ret = self.g.call("load", table="Site", values=json.dumps([{"_key": "groonga.org"}]))
         self.assertEqual(ret.body, 1)
         request = mock_urlopen.call_args[0][0]
-        self.assertEqual([{"_key": "groonga.org"}],
-                         json.loads(request.data))
-        self.assertEqual({"Content-type": "application/json"},
-                         request.headers)
+        self.assertEqual([{"_key": "groonga.org"}], json.loads(request.data))
+        self.assertEqual({"Content-type": "application/json"}, request.headers)
 
     @unittest.skipUnless(pa, "require pyarrow")
     @patch("poyonga.client.urlopen")
@@ -85,8 +77,7 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         reader = pa.ipc.open_stream(request.data)
         batches = list(reader)
         self.assertEqual({"_key": ["groonga.org"]}, batches[0].to_pydict())
-        self.assertEqual({"Content-type": "application/x-apache-arrow-streaming"},
-                         request.headers)
+        self.assertEqual({"Content-type": "application/x-apache-arrow-streaming"}, request.headers)
 
     @patch("poyonga.client.urlopen")
     def test_load_io(self, mock_urlopen):
@@ -94,15 +85,11 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         m.read.side_effect = ["[[0, 1337566253.89858, 0.000354], 1]"]
         mock_urlopen.return_value = m
         json_values = json.dumps([{"_key": "groonga.org"}])
-        ret = self.g.call("load",
-                          table="Site",
-                          values=io.BytesIO(json_values.encode()))
+        ret = self.g.call("load", table="Site", values=io.BytesIO(json_values.encode()))
         self.assertEqual(ret.body, 1)
         request = mock_urlopen.call_args[0][0]
-        self.assertEqual([{"_key": "groonga.org"}],
-                         json.loads(request.data.read()))
-        self.assertEqual({"Content-type": "application/json"},
-                         request.headers)
+        self.assertEqual([{"_key": "groonga.org"}], json.loads(request.data.read()))
+        self.assertEqual({"Content-type": "application/json"}, request.headers)
 
     @unittest.skipUnless(pa, "require pyarrow")
     @patch("poyonga.client.urlopen")
@@ -137,8 +124,7 @@ class PoyongaHTTPTestCase(unittest.TestCase):
             [None],
             [None],
         ]
-        metadata_record_batch = pa.record_batch(metadata,
-                                                schema=metadata_schema)
+        metadata_record_batch = pa.record_batch(metadata, schema=metadata_schema)
         output = pa.BufferOutputStream()
         with pa.RecordBatchStreamWriter(output, metadata_schema) as writer:
             writer.write(metadata_record_batch)
@@ -147,11 +133,7 @@ class PoyongaHTTPTestCase(unittest.TestCase):
             "content-type": "application/x-apache-arrow-streaming",
         }
         mock_urlopen.return_value = m
-        ret = self.g.call("select",
-                          command_version="3",
-                          table="Site",
-                          filter="nonexistent",
-                          output_type="apache-arrow")
+        ret = self.g.call("select", command_version="3", table="Site", filter="nonexistent", output_type="apache-arrow")
         self.assertEqual(ret.status, -63)
         self.assertEqual(ret.start_time, 1337566253.89858)
         self.assertEqual(ret.elapsed, 0.000354)
@@ -178,20 +160,16 @@ class PoyongaHTTPTestCase(unittest.TestCase):
             [int(1337566253.89858 * sec_to_ns)],
             [0.000354],
         ]
-        metadata_record_batch = pa.record_batch(metadata,
-                                                schema=metadata_schema)
+        metadata_record_batch = pa.record_batch(metadata, schema=metadata_schema)
         result_set_fields = [
             pa.field("name", pa.string()),
         ]
-        result_set_metadata = {
-            "GROONGA:n_hits": "29"
-        }
+        result_set_metadata = {"GROONGA:n_hits": "29"}
         result_set_schema = pa.schema(result_set_fields, result_set_metadata)
         result_set = [
             ["Groonga", "poyonga"],
         ]
-        result_set_record_batch = pa.record_batch(result_set,
-                                                  schema=result_set_schema)
+        result_set_record_batch = pa.record_batch(result_set, schema=result_set_schema)
         output = pa.BufferOutputStream()
         with pa.RecordBatchStreamWriter(output, metadata_schema) as writer:
             writer.write(metadata_record_batch)
@@ -202,16 +180,12 @@ class PoyongaHTTPTestCase(unittest.TestCase):
             "content-type": "application/x-apache-arrow-streaming",
         }
         mock_urlopen.return_value = m
-        ret = self.g.call("select",
-                          command_version="3",
-                          table="Site",
-                          output_type="apache-arrow")
+        ret = self.g.call("select", command_version="3", table="Site", output_type="apache-arrow")
         self.assertEqual(ret.status, 0)
         self.assertEqual(ret.start_time, 1337566253.89858)
         self.assertEqual(ret.elapsed, 0.000354)
         self.assertEqual(ret.hit_num, 29)
-        self.assertEqual(ret.items,
-                         pa.Table.from_batches([result_set_record_batch]))
+        self.assertEqual(ret.items, pa.Table.from_batches([result_set_record_batch]))
 
 
 class PoyongaHTTPSTestCase(unittest.TestCase):
@@ -327,11 +301,7 @@ class PoyongaResult(unittest.TestCase):
         elapsed = 1.0
         raw_result = [[status, start_time, elapsed], False]
         result = GroongaResult(json.dumps(raw_result))
-        self.assertEqual('<GroongaResult ' +
-                         f'status={status} ' +
-                         f'start_time={start_time} ' +
-                         f'elapsed={elapsed}>',
-                         str(result))
+        self.assertEqual(f"<GroongaResult status={status} start_time={start_time} elapsed={elapsed}>", str(result))
 
 
 if __name__ == "__main__":

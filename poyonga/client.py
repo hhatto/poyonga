@@ -32,9 +32,7 @@ def get_send_data_for_gqtp(cmd, **kwargs):
 
 def convert_gqtp_result_data(_start, _end, status, raw_data):
     # struct result data
-    diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.0) - (
-        _start.tv_sec + _start.tv_nsec / 1000000000.0
-    )
+    diff_time = (_end.tv_sec + _end.tv_nsec / 1000000000.0) - (_start.tv_sec + _start.tv_nsec / 1000000000.0)
     if status != 0:
         status -= 65536
         body = '"",[["","",0]]'
@@ -61,9 +59,7 @@ class Groonga:
         tv_sec = 0.0
         tv_nsec = 0.0
 
-    def __init__(
-        self, host="localhost", port=10041, protocol="http", encoding="utf-8", prefix_path="/d/"
-    ):
+    def __init__(self, host="localhost", port=10041, protocol="http", encoding="utf-8", prefix_path="/d/"):
         self.host = host
         self.port = port
         self.protocol = protocol

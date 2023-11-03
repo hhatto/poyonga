@@ -100,10 +100,12 @@ class GroongaResult:
         raise NotImplementedError("Apache Arrow data is not supported")
 
     def __str__(self):
-        return f"<{type(self).__name__} " + \
-            f"status={self.status} " + \
-            f"start_time={self.start_time} " + \
-            f"elapsed={self.elapsed}>"
+        return (
+            f"<{type(self).__name__} "
+            + f"status={self.status} "
+            + f"start_time={self.start_time} "
+            + f"elapsed={self.elapsed}>"
+        )
 
 
 class GroongaSelectResult(GroongaResult):
