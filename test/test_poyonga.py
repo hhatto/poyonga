@@ -83,7 +83,7 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         request = mock_urlopen.call_args[0][0]
 
         reader = pa.ipc.open_stream(request.data)
-        batches = [b for b in reader]
+        batches = list(reader)
         self.assertEqual({"_key": ["groonga.org"]}, batches[0].to_pydict())
         self.assertEqual({"Content-type": "application/x-apache-arrow-streaming"},
                          request.headers)
