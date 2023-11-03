@@ -76,6 +76,17 @@ class GroongaResult:
                     start_time_s = start_time_ns / 1_000_000_000
                     self.start_time = start_time_s
                     self.elapsed = table["elapsed_time"][0].as_py()
+                    if self.status != 0:
+                        self.hit_num = -1
+                        self.items = None
+                        try:
+                            table.schema.field("error_message")
+                            self.body = table["error_message"][0].as_py()
+                        except KeyError:
+                            # For Groonga < 13.0.9.
+                            # Groonga < 13.0.9 doesn't provide the "error_message"
+                            # column.
+                            self.body = None
                 else:
                     self._parse_apache_arrow_body(table)
 
