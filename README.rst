@@ -158,6 +158,22 @@ see `examples directory`_
 .. _`examples directory`: https://github.com/hhatto/poyonga/tree/master/examples
 
 
+for Developer
+=============
+
+install dev dependencies::
+
+    $ pip install ".[dev]"
+
+run tests::
+
+    $ pytest
+
+run linter::
+
+    $ ruff .
+
+
 Links
 =====
 * PyPI_
