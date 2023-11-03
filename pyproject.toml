@@ -27,6 +27,12 @@ dynamic = ["version"]
 [project.urls]
 Repository = "https://github.com/hhatto/poyonga"
 
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+]
+
 [tool.setuptools]
 packages = ["poyonga"]
 
@@ -36,3 +42,16 @@ version = {attr = "poyonga.__version__"}
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+select = [
+    "E", "W", "F", "I", "C", "B",
+]
+ignore = [
+    "E501",
+    "B008",
+    "C901",
+]
+extend-exclude = [
+    "examples",
+]
