@@ -1,3 +1,11 @@
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):  # noqa
+        pass
+
+
 # protocol type
 GRN_PROTO_GQTP = "gqtp"
 GRN_PROTO_HTTP = "http"
@@ -79,3 +87,15 @@ GRN_STATUS_TOO_LARGE_OFFSET = 65468
 GRN_STATUS_TOO_SMALL_LIMIT = 65467
 GRN_STATUS_CAS_ERROR = 65466
 GRN_STATUS_UNSUPPORTED_COMMAND_VERSION = 65465
+
+
+class InputType(StrEnum):
+    JSON = "json"
+    APACHE_ARROW = "apache-arrow"
+
+
+class OutputType(StrEnum):
+    JSON = "json"
+    TSV = "tsv"
+    MSGPACK = "msgpack"
+    APACHE_ARROW = "apache-arrow"

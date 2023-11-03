@@ -20,25 +20,27 @@ try:
 except ImportError:
     pa = None
 
+from poyonga import OutputType
+
 
 class GroongaResult:
-    def __init__(self, data, output_type="json", encoding="utf-8", content_type=None):
+    def __init__(self, data, output_type: OutputType = OutputType.JSON, encoding="utf-8", content_type=None):
         self.raw_result = data
-        if output_type == "tsv" or content_type == "text/tab-separated-values":
+        if output_type == OutputType.TSV or content_type == "text/tab-separated-values":
             # TODO: not implement
             csv.reader(StringIO(data), delimiter="\t")
             raise NotImplementedError(f"not implement output_type: {output_type}")
-        elif output_type == "msgpack" or content_type == "application/x-msgpack":
+        elif output_type == OutputType.MSGPACK or content_type == "application/x-msgpack":
             if msgpack:
                 _result = msgpack.unpackb(data)
             else:
                 raise Exception("msgpack is not supported")
-        elif output_type == "json" or content_type == "application/json":
+        elif output_type == OutputType.JSON or content_type == "application/json":
             if encoding == "utf-8":
                 _result = json.loads(data)
             else:
                 _result = json.loads(data, encoding=encoding)
-        elif output_type == "apache-arrow":
+        elif output_type == OutputType.APACHE_ARROW:
             if self._is_apache_arrow(content_type):
                 self._parse_apache_arrow(data)
                 return
@@ -105,7 +107,7 @@ class GroongaResult:
 
 
 class GroongaSelectResult(GroongaResult):
-    def __init__(self, data, output_type="json", encoding="utf-8", content_type=None):
+    def __init__(self, data, output_type: OutputType = OutputType.JSON, encoding="utf-8", content_type=None):
         super(GroongaSelectResult, self).__init__(data, output_type, encoding, content_type)
         if self._is_apache_arrow(content_type):
             return

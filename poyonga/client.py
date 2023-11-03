@@ -11,7 +11,7 @@ try:
 except ImportError:
     import json
 
-from poyonga.const import GQTP_HEADER_SIZE
+from poyonga.const import GQTP_HEADER_SIZE, InputType, OutputType
 from poyonga.result import GroongaResult, GroongaSelectResult
 
 
@@ -113,7 +113,7 @@ class Groonga:
                 post_data = kwargs.pop("values")
             url = "".join([url, "?", urlencode(kwargs)])
         if post_data:
-            if kwargs.get("input_type") == "apache-arrow":
+            if kwargs.get("input_type") == InputType.APACHE_ARROW:
                 content_type = "application/x-apache-arrow-streaming"
             else:
                 content_type = "application/json"
@@ -137,7 +137,7 @@ class Groonga:
     def call(self, cmd, **kwargs):
         output_type = kwargs.get("output_type")
         if not output_type:
-            output_type = "json"
+            output_type = OutputType.JSON
         if self.protocol == "http" or self.protocol == "https":
             metadata, data = self._call_http(cmd, **kwargs)
         else:
