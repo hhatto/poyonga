@@ -38,7 +38,7 @@ class GroongaResult:
                 _result = json.loads(data)
             else:
                 _result = json.loads(data, encoding=encoding)
-        elif output_type == "apache-arrow" and not self._is_apache_arrow(content_type):
+        elif output_type == "apache-arrow":
             if self._is_apache_arrow(content_type):
                 self._parse_apache_arrow(data)
                 return
