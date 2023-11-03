@@ -16,9 +16,7 @@ ret = grn.call("column_create", table="Files", name="ext", flags="COLUMN_SCALAR"
 print(ret.status)
 ret = grn.call("column_create", table="Files", name="name", flags="COLUMN_SCALAR", type="ShortText")
 print(ret.status)
-ret = grn.call(
-    "column_create", table="Files", name="content", flags="COLUMN_SCALAR", type="ShortText"
-)
+ret = grn.call("column_create", table="Files", name="content", flags="COLUMN_SCALAR", type="ShortText")
 print(ret.status)
 
 ret = grn.call(

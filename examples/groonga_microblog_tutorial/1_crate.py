@@ -25,15 +25,9 @@ _call(
 _call(g, "column_create", table="Users", name="name", flags="COLUMN_SCALAR", type="ShortText")
 _call(g, "column_create", table="Users", name="follower", flags="COLUMN_VECTOR", type="Users")
 _call(g, "column_create", table="Users", name="favorites", flags="COLUMN_VECTOR", type="Comments")
-_call(
-    g, "column_create", table="Users", name="location", flags="COLUMN_SCALAR", type="WGS84GeoPoint"
-)
-_call(
-    g, "column_create", table="Users", name="location_str", flags="COLUMN_SCALAR", type="ShortText"
-)
-_call(
-    g, "column_create", table="Users", name="description", flags="COLUMN_SCALAR", type="ShortText"
-)
+_call(g, "column_create", table="Users", name="location", flags="COLUMN_SCALAR", type="WGS84GeoPoint")
+_call(g, "column_create", table="Users", name="location_str", flags="COLUMN_SCALAR", type="ShortText")
+_call(g, "column_create", table="Users", name="description", flags="COLUMN_SCALAR", type="ShortText")
 _call(
     g,
     "column_create",
@@ -45,18 +39,10 @@ _call(
 )
 
 _call(g, "column_create", table="Comments", name="comment", flags="COLUMN_SCALAR", type="ShortText")
-_call(
-    g, "column_create", table="Comments", name="last_modified", flags="COLUMN_SCALAR", type="Time"
-)
-_call(
-    g, "column_create", table="Comments", name="replied_to", flags="COLUMN_SCALAR", type="Comments"
-)
-_call(
-    g, "column_create", table="Comments", name="replied_users", flags="COLUMN_VECTOR", type="Users"
-)
-_call(
-    g, "column_create", table="Comments", name="hash_tags", flags="COLUMN_VECTOR", type="HashTags"
-)
+_call(g, "column_create", table="Comments", name="last_modified", flags="COLUMN_SCALAR", type="Time")
+_call(g, "column_create", table="Comments", name="replied_to", flags="COLUMN_SCALAR", type="Comments")
+_call(g, "column_create", table="Comments", name="replied_users", flags="COLUMN_VECTOR", type="Users")
+_call(g, "column_create", table="Comments", name="hash_tags", flags="COLUMN_VECTOR", type="HashTags")
 _call(
     g,
     "column_create",

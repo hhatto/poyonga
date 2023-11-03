@@ -31,6 +31,7 @@ Repository = "https://github.com/hhatto/poyonga"
 dev = [
     "ruff",
     "pytest",
+    "black",
 ]
 
 [tool.setuptools]
@@ -55,4 +56,7 @@ ignore = [
 extend-exclude = [
     "examples",
 ]
+line-length = 120
+
+[tool.black]
 line-length = 120

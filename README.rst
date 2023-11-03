@@ -180,6 +180,11 @@ run linter::
     $ ruff .
 
 
+run formatter::
+
+    $ black --diff .
+
+
 Links
 =====
 * PyPI_
