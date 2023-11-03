@@ -20,7 +20,7 @@ try:
 except ImportError:
     pa = None
 
-from poyonga import OutputType
+from poyonga.const import OutputType
 
 
 class GroongaResult:
