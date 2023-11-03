@@ -55,3 +55,4 @@ ignore = [
 extend-exclude = [
     "examples",
 ]
+line-length = 120
