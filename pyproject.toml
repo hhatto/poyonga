@@ -28,7 +28,7 @@ dynamic = ["version"]
 Repository = "https://github.com/hhatto/poyonga"
 
 [tool.setuptools]
-py-modules = ["poyonga"]
+packages = ["poyonga"]
 
 [tool.setuptools.dynamic]
 version = {attr = "poyonga.__version__"}
