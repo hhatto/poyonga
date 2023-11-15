@@ -49,15 +49,29 @@ class GroongaResult:
         else:  # xml or other types...
             # TODO: not implement
             raise NotImplementedError(f"not implement output_type: {output_type}")
-        self.status = _result[0][0]
-        self.start_time = _result[0][1]
-        self.elapsed = _result[0][2]
-        if len(_result) == 1 and self.status != 0:
-            self.body = _result[0][3]
-        elif len(_result) == 1 and self.status == 0:
-            self.body = ""  # handling invalid result
+        if isinstance(_result, dict):
+            # command_version=3 or later
+            header = _result["header"]
+            self.status = header["return_code"]
+            self.start_time = header["start_time"]
+            self.elapsed = header["elapsed_time"]
+            self.trace_logs = None
+            trace_log = _result.get("trace_log")
+            if trace_log:
+                names = [column["name"] for column in trace_log["columns"]]
+                self.trace_logs = [dict(zip(names, log)) for log in trace_log["logs"]]
+            self.body = _result["body"]
         else:
-            self.body = _result[1]
+            self.status = _result[0][0]
+            self.start_time = _result[0][1]
+            self.elapsed = _result[0][2]
+            self.trace_logs = None
+            if len(_result) == 1 and self.status != 0:
+                self.body = _result[0][3]
+            elif len(_result) == 1 and self.status == 0:
+                self.body = ""  # handling invalid result
+            else:
+                self.body = _result[1]
 
     def _is_apache_arrow(self, content_type):
         return content_type == "application/x-apache-arrow-streaming"
@@ -71,6 +85,15 @@ class GroongaResult:
                 return False
             return schema.metadata.get(b"GROONGA:data_type") == b"metadata"
 
+        def is_trace_log(schema):
+            if not schema.metadata:
+                return False
+            return schema.metadata.get(b"GROONGA:data_type") == b"trace_log"
+
+        self.hit_num = -1
+        self.items = None
+        self.body = None
+        self.trace_logs = None
         source = pa.BufferReader(data)
         while source.tell() < source.size():
             with pa.RecordBatchStreamReader(source) as reader:
@@ -83,8 +106,6 @@ class GroongaResult:
                     self.start_time = start_time_s
                     self.elapsed = table["elapsed_time"][0].as_py()
                     if self.status != 0:
-                        self.hit_num = -1
-                        self.items = None
                         try:
                             table.schema.field("error_message")
                             self.body = table["error_message"][0].as_py()
@@ -92,7 +113,9 @@ class GroongaResult:
                             # For Groonga < 13.0.9.
                             # Groonga < 13.0.9 doesn't provide the "error_message"
                             # column.
-                            self.body = None
+                            pass
+                elif is_trace_log(schema):
+                    self.trace_logs = table
                 else:
                     self._parse_apache_arrow_body(table)
 
@@ -115,21 +138,29 @@ class GroongaSelectResult(GroongaResult):
             return
         self.items = []
         self.hit_num = -1  # default is -1 (Error)
-        if len(self.body) != 0:
-            self.hit_num = self.body[0][0][0]
-        if self.status == 0:
-            keys = [k[0] for k in self.body[0][1]]
-            self.items = [dict(list(zip(keys, item))) for item in self.body[0][2:]]
+        if self.body is None:
+            pass
+        elif isinstance(self.body, dict):
+            # command_version=3 or later
+            if "n_hits" in self.body:
+                self.hit_num = self.body["n_hits"]
+            if "records" in self.body:
+                keys = [column["name"] for column in self.body["columns"]]
+                self.items = [dict(zip(keys, record)) for record in self.body["records"]]
+        else:
+            if len(self.body) != 0:
+                self.hit_num = self.body[0][0][0]
+            if self.status == 0:
+                keys = [k[0] for k in self.body[0][1]]
+                self.items = [dict(zip(keys, item)) for item in self.body[0][2:]]
 
     def _parse_apache_arrow_body(self, table):
         self.body = table
-        self.hit_num = -1
-        if self.status == 0:
-            metadata = table.schema.metadata
-            if metadata:
-                n_hits_raw = metadata.get(b"GROONGA:n_hits")
-                if n_hits_raw:
-                    self.hit_num = int(n_hits_raw)
-            self.items = table
-        else:
-            self.items = None
+        if self.status != 0:
+            return
+        metadata = table.schema.metadata
+        if metadata:
+            n_hits_raw = metadata.get(b"GROONGA:n_hits")
+            if n_hits_raw:
+                self.hit_num = int(n_hits_raw)
+        self.items = table

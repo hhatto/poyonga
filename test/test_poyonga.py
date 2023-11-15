@@ -187,6 +187,174 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         self.assertEqual(ret.hit_num, 29)
         self.assertEqual(ret.items, pa.Table.from_batches([result_set_record_batch]))
 
+    @patch("poyonga.client.urlopen")
+    def test_select_json_trace_log(self, mock_urlopen):
+        m = Mock()
+        response = {
+            "header": {
+                "return_code": 0,
+                "start_time": 1337566253.89858,
+                "elapsed_time": 0.000354,
+            },
+            "trace_log": {
+                "columns": [
+                    {"name": "depth"},
+                    {"name": "sequence"},
+                    {"name": "name"},
+                    {"name": "value"},
+                    {"name": "elapsed_time"},
+                ],
+                "logs": [
+                    [1, 0, "ii.select.input", "Thas", 0],
+                    [1, 1, "ii.select.operator", "or", 1],
+                    [2, 0, "ii.select.exact.n_hits", 0, 2],
+                    [2, 0, "ii.select.fuzzy.input", "Thas", 3],
+                    [2, 1, "ii.select.fuzzy.input.actual", "that", 4],
+                    [2, 2, "ii.select.fuzzy.input.actual", "this", 5],
+                    [2, 3, "ii.select.fuzzy.n_hits", 2, 6],
+                    [1, 2, "ii.select.n_hits", 2, 7],
+                    [1, 0, "ii.select.input", "ere", 8],
+                    [1, 1, "ii.select.operator", "or", 9],
+                    [2, 0, "ii.select.exact.n_hits", 2, 10],
+                    [1, 2, "ii.select.n_hits", 2, 11],
+                ],
+            },
+            "body": {
+                "n_hits": 2,
+                "columns": [{"name": "content", "type": "ShortText"}, {"name": "_score", "type": "Float"}],
+                "records": [["This is a pen", 1.0], ["That is a pen", 1.0]],
+            },
+        }
+        m.read.side_effect = [json.dumps(response)]
+        mock_urlopen.return_value = m
+        ret = self.g.call("select", command_version="3", table="Site", output_trace_log="yes")
+        self.assertEqual(ret.status, 0)
+        self.assertEqual(ret.start_time, 1337566253.89858)
+        self.assertEqual(ret.elapsed, 0.000354)
+        self.assertEqual(ret.hit_num, 2)
+        trace_log_column_names = ["depth", "sequence", "name", "value", "elapsed_time"]
+        self.assertEqual(
+            ret.trace_logs, [dict(zip(trace_log_column_names, log)) for log in response["trace_log"]["logs"]]
+        )
+        record_column_names = ["content", "_score"]
+        self.assertEqual(ret.items, [dict(zip(record_column_names, record)) for record in response["body"]["records"]])
+
+    @unittest.skipUnless(pa, "require pyarrow")
+    @patch("poyonga.client.urlopen")
+    def test_select_apache_arrow_trace_log(self, mock_urlopen):
+        m = Mock()
+
+        metadata_fields = [
+            pa.field("return_code", pa.int32()),
+            pa.field("start_time", pa.timestamp("ns")),
+            pa.field("elapsed_time", pa.float64()),
+        ]
+        metadata_metadata = {
+            "GROONGA:data_type": "metadata",
+        }
+        metadata_schema = pa.schema(metadata_fields, metadata_metadata)
+        sec_to_ns = 1_000_000_000
+        metadata = [
+            [0],
+            [int(1337566253.89858 * sec_to_ns)],
+            [0.000354],
+        ]
+        metadata_record_batch = pa.record_batch(metadata, schema=metadata_schema)
+
+        value_type = pa.dense_union([pa.field("0", pa.uint32()), pa.field("1", pa.string())])
+        value_type_dictionary = {
+            int: 0,
+            str: 1,
+        }
+        trace_log_fields = [
+            pa.field("depth", pa.uint16()),
+            pa.field("sequence", pa.uint16()),
+            pa.field("name", pa.string()),
+            pa.field("value", value_type),
+            pa.field("elapsed_time", pa.uint64()),
+        ]
+        trace_log_metadata = {
+            "GROONGA:data_type": "trace_log",
+        }
+        trace_log_schema = pa.schema(trace_log_fields, trace_log_metadata)
+        # Row-based for easy to maintain
+        trace_logs = [
+            [1, 0, "ii.select.input", "Thas", 0],
+            [1, 1, "ii.select.operator", "or", 1],
+            [2, 0, "ii.select.exact.n_hits", 0, 2],
+            [2, 0, "ii.select.fuzzy.input", "Thas", 3],
+            [2, 1, "ii.select.fuzzy.input.actual", "that", 4],
+            [2, 2, "ii.select.fuzzy.input.actual", "this", 5],
+            [2, 3, "ii.select.fuzzy.n_hits", 2, 6],
+            [1, 2, "ii.select.n_hits", 2, 7],
+            [1, 0, "ii.select.input", "ere", 8],
+            [1, 1, "ii.select.operator", "or", 9],
+            [2, 0, "ii.select.exact.n_hits", 2, 10],
+            [1, 2, "ii.select.n_hits", 2, 11],
+        ]
+        # Column-based for PyArrow
+        trace_logs = list(zip(*trace_logs))
+        # value: Row Python values to union array
+        values = trace_logs[3]
+        value_types = []
+        value_offsets = []
+        value_offset_dictionary = {
+            int: 0,
+            str: 0,
+        }
+        value_child_dictionary = {
+            int: [],
+            str: [],
+        }
+        for value in values:
+            value_types.append(value_type_dictionary[type(value)])
+            value_offsets.append(value_offset_dictionary[type(value)])
+            value_offset_dictionary[type(value)] += 1
+            value_child_dictionary[type(value)].append(value)
+        value_children = [
+            pa.array(child, type=value_type[i].type) for i, child in enumerate(value_child_dictionary.values())
+        ]
+        value_type_field_names = [value_type.field(i).name for i in range(value_type.num_fields)]
+        trace_logs[3] = pa.UnionArray.from_dense(
+            pa.array(value_types, type=pa.int8()),
+            pa.array(value_offsets, type=pa.int32()),
+            value_children,
+            value_type_field_names,
+            value_type.type_codes,
+        )
+        trace_log_record_batch = pa.record_batch(trace_logs, schema=trace_log_schema)
+
+        result_set_fields = [
+            pa.field("content", pa.string()),
+        ]
+        result_set_metadata = {"GROONGA:n_hits": "2"}
+        result_set_schema = pa.schema(result_set_fields, result_set_metadata)
+        result_set = [
+            ["This is a pen", "That is a pen"],
+        ]
+        result_set_record_batch = pa.record_batch(result_set, schema=result_set_schema)
+        output = pa.BufferOutputStream()
+        with pa.RecordBatchStreamWriter(output, metadata_schema) as writer:
+            writer.write(metadata_record_batch)
+        with pa.RecordBatchStreamWriter(output, trace_log_schema) as writer:
+            writer.write(trace_log_record_batch)
+        with pa.RecordBatchStreamWriter(output, result_set_schema) as writer:
+            writer.write(result_set_record_batch)
+        m.read.side_effect = [output.getvalue().to_pybytes()]
+        m.headers = {
+            "content-type": "application/x-apache-arrow-streaming",
+        }
+        mock_urlopen.return_value = m
+        ret = self.g.call(
+            "select", command_version="3", table="Site", output_type="apache-arrow", output_trace_log="yes"
+        )
+        self.assertEqual(ret.status, 0)
+        self.assertEqual(ret.start_time, 1337566253.89858)
+        self.assertEqual(ret.elapsed, 0.000354)
+        self.assertEqual(ret.hit_num, 2)
+        self.assertEqual(ret.trace_logs, pa.Table.from_batches([trace_log_record_batch]))
+        self.assertEqual(ret.items, pa.Table.from_batches([result_set_record_batch]))
+
 
 class PoyongaHTTPSTestCase(unittest.TestCase):
     def setUp(self):
