@@ -18,7 +18,7 @@ poyonga support to HTTP and GQTP protocol.
 
 Requrements
 ===========
-* Python 3.6+
+* Python 3.8+
 
 
 Installation
