@@ -37,7 +37,7 @@ jobs:
         ruff check .
     - name: Check code format with black
       run: |
-        black --check --diff .
+        ruff format --check --diff .
     - name: Test with pytest
       run: |
         pytest
