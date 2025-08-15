@@ -177,12 +177,12 @@ run tests::
 
 run linter::
 
-    $ ruff .
+    $ ruff check .
 
 
 run formatter::
 
-    $ black --diff .
+    $ ruff format --check --diff .
 
 
 Links
