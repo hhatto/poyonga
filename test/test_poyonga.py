@@ -234,10 +234,13 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         self.assertEqual(ret.hit_num, 2)
         trace_log_column_names = ["depth", "sequence", "name", "value", "elapsed_time"]
         self.assertEqual(
-            ret.trace_logs, [dict(zip(trace_log_column_names, log)) for log in response["trace_log"]["logs"]]
+            ret.trace_logs,
+            [dict(zip(trace_log_column_names, log, strict=False)) for log in response["trace_log"]["logs"]],
         )
         record_column_names = ["content", "_score"]
-        self.assertEqual(ret.items, [dict(zip(record_column_names, record)) for record in response["body"]["records"]])
+        self.assertEqual(
+            ret.items, [dict(zip(record_column_names, record, strict=False)) for record in response["body"]["records"]]
+        )
 
     @unittest.skipUnless(pa, "require pyarrow")
     @patch("poyonga.client.urlopen")
@@ -293,7 +296,7 @@ class PoyongaHTTPTestCase(unittest.TestCase):
             [1, 2, "ii.select.n_hits", 2, 11],
         ]
         # Column-based for PyArrow
-        trace_logs = list(zip(*trace_logs))
+        trace_logs = list(zip(*trace_logs, strict=False))
         # value: Row Python values to union array
         values = trace_logs[3]
         value_types = []
