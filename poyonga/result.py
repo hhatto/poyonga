@@ -59,7 +59,7 @@ class GroongaResult:
             trace_log = _result.get("trace_log")
             if trace_log:
                 names = [column["name"] for column in trace_log["columns"]]
-                self.trace_logs = [dict(zip(names, log)) for log in trace_log["logs"]]
+                self.trace_logs = [dict(zip(names, log, strict=False)) for log in trace_log["logs"]]
             self.body = _result["body"]
         else:
             self.status = _result[0][0]
@@ -146,13 +146,13 @@ class GroongaSelectResult(GroongaResult):
                 self.hit_num = self.body["n_hits"]
             if "records" in self.body:
                 keys = [column["name"] for column in self.body["columns"]]
-                self.items = [dict(zip(keys, record)) for record in self.body["records"]]
+                self.items = [dict(zip(keys, record, strict=False)) for record in self.body["records"]]
         else:
             if len(self.body) != 0:
                 self.hit_num = self.body[0][0][0]
             if self.status == 0:
                 keys = [k[0] for k in self.body[0][1]]
-                self.items = [dict(zip(keys, item)) for item in self.body[0][2:]]
+                self.items = [dict(zip(keys, item, strict=False)) for item in self.body[0][2:]]
 
     def _parse_apache_arrow_body(self, table):
         self.body = table
