@@ -234,10 +234,13 @@ class PoyongaHTTPTestCase(unittest.TestCase):
         self.assertEqual(ret.hit_num, 2)
         trace_log_column_names = ["depth", "sequence", "name", "value", "elapsed_time"]
         self.assertEqual(
-            ret.trace_logs, [dict(zip(trace_log_column_names, log, strict=False)) for log in response["trace_log"]["logs"]]
+            ret.trace_logs,
+            [dict(zip(trace_log_column_names, log, strict=False)) for log in response["trace_log"]["logs"]],
         )
         record_column_names = ["content", "_score"]
-        self.assertEqual(ret.items, [dict(zip(record_column_names, record, strict=False)) for record in response["body"]["records"]])
+        self.assertEqual(
+            ret.items, [dict(zip(record_column_names, record, strict=False)) for record in response["body"]["records"]]
+        )
 
     @unittest.skipUnless(pa, "require pyarrow")
     @patch("poyonga.client.urlopen")
