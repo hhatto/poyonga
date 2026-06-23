@@ -169,20 +169,32 @@ for Developer
 
 install dev dependencies::
 
-    $ pip install ".[dev]"
+    $ uv sync --dev
 
 run tests::
 
-    $ pytest
+    $ uv run pytest test
 
 run linter::
 
-    $ ruff check .
+    $ uv run ruff check .
 
 
 run formatter::
 
-    $ ruff format --check --diff .
+    $ uv run ruff format --check --diff .
+
+run tests with tox and uv(python)
+---------------------------------
+
+set-up::
+
+    $ uv python install py310 py311 py312 py313 py314 pypy3.10 pypy3.11
+    $ uv tool install tox --with tox-uv
+
+run::
+
+    $ tox
 
 
 Links
